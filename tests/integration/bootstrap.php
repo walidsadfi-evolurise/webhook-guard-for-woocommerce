@@ -1,0 +1,49 @@
+<?php
+/**
+ * Integration bootstrap: WordPress test suite + WooCommerce + this plugin.
+ *
+ * WP_TESTS_DIR must point to the wordpress-develop tests/phpunit directory (see bin/install-wp-tests.sh).
+ *
+ * @package WebhookGuard
+ */
+
+$wcwg_tests_dir = getenv( 'WP_TESTS_DIR' );
+if ( ! $wcwg_tests_dir ) {
+	$wcwg_tests_dir = rtrim( sys_get_temp_dir(), '/\\' ) . '/wordpress-tests-lib';
+}
+if ( ! file_exists( $wcwg_tests_dir . '/includes/functions.php' ) ) {
+	echo "Could not find {$wcwg_tests_dir}/includes/functions.php, run bin/install-wp-tests.sh first.\n";
+	exit( 1 );
+}
+
+require_once $wcwg_tests_dir . '/includes/functions.php';
+
+tests_add_filter(
+	'muplugins_loaded',
+	function () {
+		$wc = getenv( 'WC_PLUGIN_FILE' );
+		if ( ! $wc ) {
+			$wc = dirname( __DIR__, 2 ) . '/vendor/woocommerce/woocommerce/woocommerce.php';
+		}
+		if ( ! file_exists( $wc ) ) {
+			$wc = WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
+		}
+		require_once $wc;
+		require_once dirname( __DIR__, 2 ) . '/webhook-guard-for-woocommerce.php';
+	}
+);
+
+tests_add_filter(
+	'setup_theme',
+	function () {
+		// Install WooCommerce tables and defaults.
+		if ( class_exists( 'WC_Install' ) ) {
+			WC_Install::install();
+		}
+		WCWG_Store::install();
+		$GLOBALS['wp_roles'] = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		wp_roles();
+	}
+);
+
+require $wcwg_tests_dir . '/includes/bootstrap.php';
