@@ -259,7 +259,7 @@ class WCWG_Retry {
 		$n = 0;
 		foreach ( array_values( array_unique( array_map( 'intval', $row_ids ) ) ) as $i => $id ) {
 			as_schedule_single_action( time() + $i * max( 0, (int) $spacing ), self::ACTION_REPLAY, array( 'row_id' => $id ), self::GROUP );
-			$n++;
+			++$n;
 		}
 		return $n;
 	}

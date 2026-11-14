@@ -62,14 +62,14 @@ class WCWG_Alerts {
 
 		$payload = array_merge(
 			array(
-				'event'       => $event,
-				'site'        => home_url(),
-				'webhook_id'  => (int) $webhook_id,
-				'webhook'     => $name,
-				'topic'       => $webhook ? $webhook->get_topic() : '',
+				'event'        => $event,
+				'site'         => home_url(),
+				'webhook_id'   => (int) $webhook_id,
+				'webhook'      => $name,
+				'topic'        => $webhook ? $webhook->get_topic() : '',
 				'delivery_url' => $webhook ? $webhook->get_delivery_url() : '',
-				'admin_url'   => admin_url( 'admin.php?page=wcwg&webhook_id=' . (int) $webhook_id ),
-				'time'        => gmdate( 'c' ),
+				'admin_url'    => admin_url( 'admin.php?page=wcwg&webhook_id=' . (int) $webhook_id ),
+				'time'         => gmdate( 'c' ),
 			),
 			$context
 		);
@@ -130,7 +130,13 @@ class WCWG_Alerts {
 		if ( ! $url ) {
 			return;
 		}
-		$body = array_merge( array( 'text' => $subject, 'content' => $subject ), $payload );
+		$body = array_merge(
+			array(
+				'text'    => $subject,
+				'content' => $subject,
+			),
+			$payload
+		);
 		wp_safe_remote_post(
 			$url,
 			array(

@@ -116,8 +116,8 @@ class WCWG_Admin {
 
 		switch ( $do ) {
 			case 'replay':
-				$id = isset( $_POST['row_id'] ) ? (int) $_POST['row_id'] : 0;
-				$r  = WCWG_Retry::replay( $id );
+				$id  = isset( $_POST['row_id'] ) ? (int) $_POST['row_id'] : 0;
+				$r   = WCWG_Retry::replay( $id );
 				$msg = is_wp_error( $r ) ? $r->get_error_message() : __( 'Delivery replayed. Check the newest row for the result.', 'webhook-guard-for-woocommerce' );
 				break;
 

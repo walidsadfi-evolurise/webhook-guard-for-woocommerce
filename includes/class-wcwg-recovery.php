@@ -154,7 +154,7 @@ class WCWG_Recovery {
 		if ( $manual ) {
 			$state['reenable_attempts'] = 0;
 		} else {
-			$state['reenable_attempts']++;
+			++$state['reenable_attempts'];
 		}
 		$state['last_reenabled_at'] = time();
 		self::set_state( $webhook_id, $state );

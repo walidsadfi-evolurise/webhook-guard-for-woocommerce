@@ -31,9 +31,16 @@ $wcwg_webhooks = wc_load_webhooks();
 		$wcwg_state = WCWG_Recovery::state( $wcwg_w->get_id() );
 		$wcwg_dead  = count( WCWG_Store::dead_for_webhook( $wcwg_w->get_id(), 500 ) );
 		$wcwg_next  = as_next_scheduled_action( WCWG_Recovery::ACTION_REENABLE, array( 'webhook_id' => $wcwg_w->get_id() ), WCWG_Retry::GROUP );
+		$wcwg_link  = add_query_arg(
+			array(
+				'page'       => 'wcwg',
+				'webhook_id' => $wcwg_w->get_id(),
+			),
+			admin_url( 'admin.php' )
+		);
 		?>
 		<tr>
-			<td><a href="<?php echo esc_url( add_query_arg( array( 'page' => 'wcwg', 'webhook_id' => $wcwg_w->get_id() ), admin_url( 'admin.php' ) ) ); ?>"><?php echo esc_html( $wcwg_w->get_name() ); ?></a><br><small>#<?php echo (int) $wcwg_w->get_id(); ?> · <a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=advanced&section=webhooks&edit-webhook=' . $wcwg_w->get_id() ) ); ?>"><?php esc_html_e( 'edit', 'webhook-guard-for-woocommerce' ); ?></a></small></td>
+			<td><a href="<?php echo esc_url( $wcwg_link ); ?>"><?php echo esc_html( $wcwg_w->get_name() ); ?></a><br><small>#<?php echo (int) $wcwg_w->get_id(); ?> · <a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=advanced&section=webhooks&edit-webhook=' . $wcwg_w->get_id() ) ); ?>"><?php esc_html_e( 'edit', 'webhook-guard-for-woocommerce' ); ?></a></small></td>
 			<td><code><?php echo esc_html( $wcwg_w->get_topic() ); ?></code></td>
 			<td><small><?php echo esc_html( $wcwg_w->get_delivery_url() ); ?></small></td>
 			<td>

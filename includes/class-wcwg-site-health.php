@@ -62,15 +62,15 @@ class WCWG_Site_Health {
 		foreach ( $disabled as $w ) {
 			$names[] = $w->get_name();
 		}
-		$base['label']       = sprintf(
+		$base['label'] = sprintf(
 			/* translators: %d: number of webhooks */
 			_n( '%d WooCommerce webhook is disabled', '%d WooCommerce webhooks are disabled', count( $disabled ), 'webhook-guard-for-woocommerce' ),
 			count( $disabled )
 		);
-		$base['status']      = 'critical';
+		$base['status']         = 'critical';
 		$base['badge']['color'] = 'red';
-		$base['description'] = '<p>' . esc_html__( 'Events are not being sent to these receivers:', 'webhook-guard-for-woocommerce' ) . ' <strong>' . esc_html( implode( ', ', $names ) ) . '</strong></p>';
-		$base['actions']     = '<a href="' . esc_url( admin_url( 'admin.php?page=wcwg' ) ) . '">' . esc_html__( 'Open Webhook Guard', 'webhook-guard-for-woocommerce' ) . '</a>';
+		$base['description']    = '<p>' . esc_html__( 'Events are not being sent to these receivers:', 'webhook-guard-for-woocommerce' ) . ' <strong>' . esc_html( implode( ', ', $names ) ) . '</strong></p>';
+		$base['actions']        = '<a href="' . esc_url( admin_url( 'admin.php?page=wcwg' ) ) . '">' . esc_html__( 'Open Webhook Guard', 'webhook-guard-for-woocommerce' ) . '</a>';
 		return $base;
 	}
 
@@ -96,15 +96,15 @@ class WCWG_Site_Health {
 		if ( 0 === $dead ) {
 			return $base;
 		}
-		$base['label']       = sprintf(
+		$base['label'] = sprintf(
 			/* translators: %d: number of deliveries */
 			_n( '%d webhook delivery gave up in the last 24 hours', '%d webhook deliveries gave up in the last 24 hours', $dead, 'webhook-guard-for-woocommerce' ),
 			$dead
 		);
-		$base['status']      = 'recommended';
+		$base['status']         = 'recommended';
 		$base['badge']['color'] = 'orange';
-		$base['description'] = '<p>' . esc_html__( 'These events never reached their receiver. They can be replayed from the Webhook Guard screen.', 'webhook-guard-for-woocommerce' ) . '</p>';
-		$base['actions']     = '<a href="' . esc_url( admin_url( 'admin.php?page=wcwg&status=dead' ) ) . '">' . esc_html__( 'Review dead deliveries', 'webhook-guard-for-woocommerce' ) . '</a>';
+		$base['description']    = '<p>' . esc_html__( 'These events never reached their receiver. They can be replayed from the Webhook Guard screen.', 'webhook-guard-for-woocommerce' ) . '</p>';
+		$base['actions']        = '<a href="' . esc_url( admin_url( 'admin.php?page=wcwg&status=dead' ) ) . '">' . esc_html__( 'Review dead deliveries', 'webhook-guard-for-woocommerce' ) . '</a>';
 		return $base;
 	}
 }

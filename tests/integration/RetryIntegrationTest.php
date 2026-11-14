@@ -33,7 +33,7 @@ class RetryIntegrationTest extends WP_UnitTestCase {
 		$this->seen = array();
 		add_filter( 'pre_http_request', array( $this, 'fake_receiver' ), 10, 3 );
 		add_filter( 'woocommerce_webhook_deliver_async', '__return_false' );
-		update_option( WCWG_Settings::OPTION, WCWG_Settings::sanitize( array( 'max_retries' => 2, 'base_delay' => 60, 'alert_throttle' => 0 ) ) );
+		update_option( WCWG_Settings::OPTION, WCWG_Settings::sanitize( array_merge( WCWG_Settings::defaults(), array( 'max_retries' => 2, 'base_delay' => 60, 'alert_throttle' => 0 ) ) ) );
 		global $wpdb;
 		$wpdb->query( 'DELETE FROM ' . WCWG_Store::table() ); // phpcs:ignore WordPress.DB
 	}
@@ -86,6 +86,9 @@ class RetryIntegrationTest extends WP_UnitTestCase {
 		$w->set_secret( 's3cret' );
 		$w->set_api_version( 3 );
 		$w->set_user_id( 1 );
+		$w->save();
+		// WooCommerce sends a one-off "ping" POST the first time a new webhook is saved; clear the flag so the fake receiver only logs real deliveries.
+		$w->set_pending_delivery( false );
 		$w->save();
 		return $w;
 	}
@@ -170,7 +173,7 @@ class RetryIntegrationTest extends WP_UnitTestCase {
 	public function test_disabled_webhook_is_recovered() {
 		$w     = $this->make_webhook();
 		$order = wc_create_order();
-		update_option( WCWG_Settings::OPTION, WCWG_Settings::sanitize( array( 'max_retries' => 0, 'alert_throttle' => 0 ) ) );
+		update_option( WCWG_Settings::OPTION, WCWG_Settings::sanitize( array_merge( WCWG_Settings::defaults(), array( 'max_retries' => 0, 'alert_throttle' => 0 ) ) ) );
 
 		$this->receiver = 500;
 		for ( $i = 0; $i < 7; $i++ ) {

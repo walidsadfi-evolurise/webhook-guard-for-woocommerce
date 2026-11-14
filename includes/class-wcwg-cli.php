@@ -121,7 +121,7 @@ class WCWG_CLI {
 			if ( is_wp_error( $r ) ) {
 				WP_CLI::warning( sprintf( '#%d: %s', $id, $r->get_error_message() ) );
 			} else {
-				$ok++;
+				++$ok;
 			}
 		}
 		WP_CLI::success( sprintf( '%d of %d replayed.', $ok, count( $ids ) ) );
@@ -147,11 +147,8 @@ class WCWG_CLI {
 
 	/**
 	 * Counts for the last 24 hours and the list of disabled webhooks.
-	 *
-	 * @param array $args       Positional.
-	 * @param array $assoc_args Named.
 	 */
-	public function stats( $args, $assoc_args ) {
+	public function stats() {
 		$counts = WCWG_Store::counts( 24 );
 		foreach ( $counts as $k => $v ) {
 			WP_CLI::line( sprintf( '%-10s %d', $k, $v ) );

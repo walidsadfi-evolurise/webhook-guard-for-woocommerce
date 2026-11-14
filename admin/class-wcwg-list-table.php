@@ -83,15 +83,21 @@ class WCWG_List_Table extends WP_List_Table {
 	protected function get_views() {
 		$current = isset( $_GET['status'] ) ? sanitize_key( wp_unslash( $_GET['status'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$labels  = array(
-			''                           => __( 'All', 'webhook-guard-for-woocommerce' ),
-			WCWG_Store::STATUS_DEAD      => __( 'Dead', 'webhook-guard-for-woocommerce' ),
-			WCWG_Store::STATUS_FAILED    => __( 'Retrying', 'webhook-guard-for-woocommerce' ),
-			WCWG_Store::STATUS_SUCCESS   => __( 'Succeeded', 'webhook-guard-for-woocommerce' ),
-			WCWG_Store::STATUS_REPLAYED  => __( 'Replayed', 'webhook-guard-for-woocommerce' ),
+			''                          => __( 'All', 'webhook-guard-for-woocommerce' ),
+			WCWG_Store::STATUS_DEAD     => __( 'Dead', 'webhook-guard-for-woocommerce' ),
+			WCWG_Store::STATUS_FAILED   => __( 'Retrying', 'webhook-guard-for-woocommerce' ),
+			WCWG_Store::STATUS_SUCCESS  => __( 'Succeeded', 'webhook-guard-for-woocommerce' ),
+			WCWG_Store::STATUS_REPLAYED => __( 'Replayed', 'webhook-guard-for-woocommerce' ),
 		);
-		$views = array();
+		$views   = array();
 		foreach ( $labels as $k => $label ) {
-			$url     = add_query_arg( array( 'page' => 'wcwg', 'status' => $k ? $k : false ), admin_url( 'admin.php' ) );
+			$url     = add_query_arg(
+				array(
+					'page'   => 'wcwg',
+					'status' => $k ? $k : false,
+				),
+				admin_url( 'admin.php' )
+			);
 			$views[] = sprintf( '<a href="%s" class="%s">%s</a>', esc_url( $url ), $current === $k ? 'current' : '', esc_html( $label ) );
 		}
 		return $views;
@@ -145,9 +151,21 @@ class WCWG_List_Table extends WP_List_Table {
 	public function column_default( $item, $column ) {
 		switch ( $column ) {
 			case 'webhook_id':
-				$w = wc_get_webhook( (int) $item->webhook_id );
+				$w    = wc_get_webhook( (int) $item->webhook_id );
 				$name = $w ? $w->get_name() : sprintf( '#%d', (int) $item->webhook_id );
-				return sprintf( '<a href="%s">%s</a>', esc_url( add_query_arg( array( 'page' => 'wcwg', 'webhook_id' => (int) $item->webhook_id ), admin_url( 'admin.php' ) ) ), esc_html( $name ) );
+				return sprintf(
+					'<a href="%s">%s</a>',
+					esc_url(
+						add_query_arg(
+							array(
+								'page'       => 'wcwg',
+								'webhook_id' => (int) $item->webhook_id,
+							),
+							admin_url( 'admin.php' )
+						)
+					),
+					esc_html( $name )
+				);
 			case 'status':
 				$labels = array(
 					WCWG_Store::STATUS_SUCCESS  => __( 'Succeeded', 'webhook-guard-for-woocommerce' ),
@@ -155,7 +173,7 @@ class WCWG_List_Table extends WP_List_Table {
 					WCWG_Store::STATUS_DEAD     => __( 'Dead', 'webhook-guard-for-woocommerce' ),
 					WCWG_Store::STATUS_REPLAYED => __( 'Replayed', 'webhook-guard-for-woocommerce' ),
 				);
-				$label = isset( $labels[ $item->status ] ) ? $labels[ $item->status ] : $item->status;
+				$label  = isset( $labels[ $item->status ] ) ? $labels[ $item->status ] : $item->status;
 				return sprintf( '<span class="wcwg-status wcwg-status-%s">%s</span>', esc_attr( $item->status ), esc_html( $label ) );
 			case 'response_code':
 				$out = '<code>' . esc_html( $item->response_code ) . '</code>';
