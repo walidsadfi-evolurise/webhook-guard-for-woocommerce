@@ -101,7 +101,7 @@ class WCWG_Store {
 	public static function get( $id ) {
 		global $wpdb;
 		$table = self::table();
-		return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE id = %d", (int) $id ) ); // phpcs:ignore WordPress.DB
+		return $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE id = %d', $table, (int) $id ) ); // phpcs:ignore WordPress.DB
 	}
 
 	/**
@@ -126,40 +126,70 @@ class WCWG_Store {
 			$args
 		);
 
-		$where  = array( '1=1' );
-		$params = array();
-		if ( '' !== $args['status'] ) {
-			$where[]  = 'status = %s';
-			$params[] = $args['status'];
+		$status     = (string) $args['status'];
+		$webhook_id = (int) $args['webhook_id'];
+		$search     = (string) $args['search'];
+		$like       = '%' . $wpdb->esc_like( $search ) . '%';
+		$orderby    = in_array( $args['orderby'], array( 'id', 'webhook_id', 'status', 'created_at', 'attempt', 'response_code' ), true ) ? $args['orderby'] : 'id';
+		$limit      = max( 1, (int) $args['per_page'] );
+		$offset     = max( 0, ( (int) $args['page'] - 1 ) * $limit );
+
+		// Every filter is always present and switched off by its own empty value, so the SQL text is fixed.
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery
+		$total = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*) FROM %i WHERE ( %s = '' OR status = %s ) AND ( %d = 0 OR webhook_id = %d ) AND ( %s = '' OR topic LIKE %s OR resource_arg LIKE %s OR response_code LIKE %s OR error_message LIKE %s )",
+				$table,
+				$status,
+				$status,
+				$webhook_id,
+				$webhook_id,
+				$search,
+				$like,
+				$like,
+				$like,
+				$like
+			)
+		);
+		if ( 'ASC' === strtoupper( (string) $args['order'] ) ) {
+			$items = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM %i WHERE ( %s = '' OR status = %s ) AND ( %d = 0 OR webhook_id = %d ) AND ( %s = '' OR topic LIKE %s OR resource_arg LIKE %s OR response_code LIKE %s OR error_message LIKE %s ) ORDER BY %i ASC LIMIT %d OFFSET %d",
+					$table,
+					$status,
+					$status,
+					$webhook_id,
+					$webhook_id,
+					$search,
+					$like,
+					$like,
+					$like,
+					$like,
+					$orderby,
+					$limit,
+					$offset
+				)
+			);
+		} else {
+			$items = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT * FROM %i WHERE ( %s = '' OR status = %s ) AND ( %d = 0 OR webhook_id = %d ) AND ( %s = '' OR topic LIKE %s OR resource_arg LIKE %s OR response_code LIKE %s OR error_message LIKE %s ) ORDER BY %i DESC LIMIT %d OFFSET %d",
+					$table,
+					$status,
+					$status,
+					$webhook_id,
+					$webhook_id,
+					$search,
+					$like,
+					$like,
+					$like,
+					$like,
+					$orderby,
+					$limit,
+					$offset
+				)
+			);
 		}
-		if ( $args['webhook_id'] ) {
-			$where[]  = 'webhook_id = %d';
-			$params[] = (int) $args['webhook_id'];
-		}
-		if ( '' !== $args['search'] ) {
-			$like     = '%' . $wpdb->esc_like( $args['search'] ) . '%';
-			$where[]  = '(topic LIKE %s OR resource_arg LIKE %s OR response_code LIKE %s OR error_message LIKE %s)';
-			$params[] = $like;
-			$params[] = $like;
-			$params[] = $like;
-			$params[] = $like;
-		}
-
-		$orderby = in_array( $args['orderby'], array( 'id', 'webhook_id', 'status', 'created_at', 'attempt', 'response_code' ), true ) ? $args['orderby'] : 'id';
-		$order   = 'ASC' === strtoupper( $args['order'] ) ? 'ASC' : 'DESC';
-		$limit   = max( 1, (int) $args['per_page'] );
-		$offset  = max( 0, ( (int) $args['page'] - 1 ) * $limit );
-
-		$where_sql = implode( ' AND ', $where );
-
-		// Table name, WHERE and ORDER BY are built from whitelisted identifiers above; values go through prepare().
-		// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare, WordPress.DB.DirectDatabaseQuery
-		$total = $params
-			? (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$table} WHERE {$where_sql}", $params ) )
-			: (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$table} WHERE {$where_sql}" );
-
-		$sql   = "SELECT * FROM {$table} WHERE {$where_sql} ORDER BY {$orderby} {$order} LIMIT %d OFFSET %d";
-		$items = $wpdb->get_results( $wpdb->prepare( $sql, array_merge( $params, array( $limit, $offset ) ) ) );
 		// phpcs:enable
 
 		return array(
@@ -178,7 +208,7 @@ class WCWG_Store {
 		global $wpdb;
 		$table = self::table();
 		$since = gmdate( 'Y-m-d H:i:s', time() - $since_hours * HOUR_IN_SECONDS );
-		$rows  = $wpdb->get_results( $wpdb->prepare( "SELECT status, COUNT(*) AS n FROM {$table} WHERE created_at >= %s GROUP BY status", $since ) ); // phpcs:ignore WordPress.DB
+		$rows  = $wpdb->get_results( $wpdb->prepare( 'SELECT status, COUNT(*) AS n FROM %i WHERE created_at >= %s GROUP BY status', $table, $since ) ); // phpcs:ignore WordPress.DB
 		$out   = array(
 			self::STATUS_SUCCESS  => 0,
 			self::STATUS_FAILED   => 0,
@@ -201,7 +231,7 @@ class WCWG_Store {
 	public static function dead_for_webhook( $webhook_id, $limit = 200 ) {
 		global $wpdb;
 		$table = self::table();
-		return (array) $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table} WHERE webhook_id = %d AND status = %s ORDER BY id ASC LIMIT %d", (int) $webhook_id, self::STATUS_DEAD, (int) $limit ) ); // phpcs:ignore WordPress.DB
+		return (array) $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i WHERE webhook_id = %d AND status = %s ORDER BY id ASC LIMIT %d', $table, (int) $webhook_id, self::STATUS_DEAD, (int) $limit ) ); // phpcs:ignore WordPress.DB
 	}
 
 	/**
@@ -214,7 +244,7 @@ class WCWG_Store {
 		global $wpdb;
 		$table  = self::table();
 		$before = gmdate( 'Y-m-d H:i:s', time() - max( 1, (int) $days ) * DAY_IN_SECONDS );
-		return (int) $wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE created_at < %s", $before ) ); // phpcs:ignore WordPress.DB
+		return (int) $wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE created_at < %s', $table, $before ) ); // phpcs:ignore WordPress.DB
 	}
 
 	/**
@@ -223,6 +253,6 @@ class WCWG_Store {
 	public static function drop() {
 		global $wpdb;
 		$table = self::table();
-		$wpdb->query( "DROP TABLE IF EXISTS {$table}" ); // phpcs:ignore WordPress.DB
+		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $table ) ); // phpcs:ignore WordPress.DB
 	}
 }

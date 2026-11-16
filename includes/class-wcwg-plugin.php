@@ -42,8 +42,6 @@ class WCWG_Plugin {
 			return;
 		}
 
-		load_plugin_textdomain( 'webhook-guard-for-woocommerce', false, dirname( plugin_basename( WCWG_FILE ) ) . '/languages' );
-
 		if ( get_option( 'wcwg_db_version' ) !== WCWG_VERSION ) {
 			WCWG_Store::install();
 		}

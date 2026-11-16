@@ -10,7 +10,7 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 global $wpdb;
 
 $wcwg_table = $wpdb->prefix . 'wcwg_deliveries';
-$wpdb->query( "DROP TABLE IF EXISTS {$wcwg_table}" ); // phpcs:ignore WordPress.DB
+$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wcwg_table ) ); // phpcs:ignore WordPress.DB
 
 delete_option( 'wcwg_settings' );
 delete_option( 'wcwg_db_version' );
