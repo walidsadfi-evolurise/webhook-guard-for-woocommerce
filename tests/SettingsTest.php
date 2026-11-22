@@ -8,7 +8,7 @@
 use PHPUnit\Framework\TestCase;
 
 /**
- * WCWG_Settings.
+ * EVOWG_Settings.
  */
 class SettingsTest extends TestCase {
 
@@ -16,32 +16,32 @@ class SettingsTest extends TestCase {
 	 * Reset the fake option store.
 	 */
 	protected function setUp(): void {
-		$GLOBALS['wcwg_test_options'] = array();
+		$GLOBALS['evowg_test_options'] = array();
 	}
 
 	/**
 	 * Unknown option => defaults.
 	 */
 	public function test_defaults_when_nothing_saved() {
-		$this->assertSame( 5, WCWG_Settings::get( 'max_retries' ) );
-		$this->assertSame( 1, WCWG_Settings::get( 'auto_reenable' ) );
-		$this->assertSame( 0, WCWG_Settings::get( 'store_body' ) );
+		$this->assertSame( 5, EVOWG_Settings::get( 'max_retries' ) );
+		$this->assertSame( 1, EVOWG_Settings::get( 'auto_reenable' ) );
+		$this->assertSame( 0, EVOWG_Settings::get( 'store_body' ) );
 	}
 
 	/**
 	 * Partial saved arrays are merged with defaults (upgrade safety).
 	 */
 	public function test_partial_option_merges_with_defaults() {
-		$GLOBALS['wcwg_test_options'][ WCWG_Settings::OPTION ] = array( 'max_retries' => 2 );
-		$this->assertSame( 2, WCWG_Settings::get( 'max_retries' ) );
-		$this->assertSame( 60, WCWG_Settings::get( 'base_delay' ) );
+		$GLOBALS['evowg_test_options'][ EVOWG_Settings::OPTION ] = array( 'max_retries' => 2 );
+		$this->assertSame( 2, EVOWG_Settings::get( 'max_retries' ) );
+		$this->assertSame( 60, EVOWG_Settings::get( 'base_delay' ) );
 	}
 
 	/**
 	 * Sanitise clamps numbers, normalises checkboxes, filters emails and URLs.
 	 */
 	public function test_sanitize() {
-		$out = WCWG_Settings::sanitize(
+		$out = EVOWG_Settings::sanitize(
 			array(
 				'max_retries'       => '99',
 				'base_delay'        => '1',
@@ -69,20 +69,20 @@ class SettingsTest extends TestCase {
 	 * Non-array input does not fatal.
 	 */
 	public function test_sanitize_garbage() {
-		$out = WCWG_Settings::sanitize( 'nope' );
-		$this->assertSame( WCWG_Settings::defaults()['max_retries'], $out['max_retries'] );
+		$out = EVOWG_Settings::sanitize( 'nope' );
+		$this->assertSame( EVOWG_Settings::defaults()['max_retries'], $out['max_retries'] );
 	}
 
 	/**
 	 * The backoff built from settings reflects them.
 	 */
 	public function test_backoff_from_settings() {
-		$GLOBALS['wcwg_test_options'][ WCWG_Settings::OPTION ] = array(
+		$GLOBALS['evowg_test_options'][ EVOWG_Settings::OPTION ] = array(
 			'max_retries' => 3,
 			'base_delay'  => 10,
 			'multiplier'  => 2,
 			'max_delay'   => 1000,
 		);
-		$this->assertSame( array( 10, 20, 40 ), WCWG_Settings::backoff()->schedule() );
+		$this->assertSame( array( 10, 20, 40 ), EVOWG_Settings::backoff()->schedule() );
 	}
 }

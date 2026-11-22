@@ -18,7 +18,7 @@ defined( 'ABSPATH' ) || exit;
  *     wp wc webhook-guard reenable 7
  *     wp wc webhook-guard stats
  */
-class WCWG_CLI {
+class EVOWG_CLI {
 
 	/**
 	 * List recorded deliveries.
@@ -41,7 +41,7 @@ class WCWG_CLI {
 	 * @param array $assoc_args Named.
 	 */
 	public function list( $args, $assoc_args ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames
-		$res  = WCWG_Store::query(
+		$res  = EVOWG_Store::query(
 			array(
 				'status'     => isset( $assoc_args['status'] ) ? $assoc_args['status'] : '',
 				'webhook_id' => isset( $assoc_args['webhook'] ) ? (int) $assoc_args['webhook'] : 0,
@@ -88,7 +88,7 @@ class WCWG_CLI {
 	 */
 	public function replay( $args, $assoc_args ) {
 		if ( ! empty( $args[0] ) ) {
-			$r = WCWG_Retry::replay( (int) $args[0] );
+			$r = EVOWG_Retry::replay( (int) $args[0] );
 			if ( is_wp_error( $r ) ) {
 				WP_CLI::error( $r->get_error_message() );
 			}
@@ -98,10 +98,10 @@ class WCWG_CLI {
 		if ( empty( $assoc_args['webhook'] ) ) {
 			WP_CLI::error( 'Give a row ID or --webhook=<id>.' );
 		}
-		$res = WCWG_Store::query(
+		$res = EVOWG_Store::query(
 			array(
 				'webhook_id' => (int) $assoc_args['webhook'],
-				'status'     => isset( $assoc_args['status'] ) ? $assoc_args['status'] : WCWG_Store::STATUS_DEAD,
+				'status'     => isset( $assoc_args['status'] ) ? $assoc_args['status'] : EVOWG_Store::STATUS_DEAD,
 				'per_page'   => 1000,
 			)
 		);
@@ -111,13 +111,13 @@ class WCWG_CLI {
 			return;
 		}
 		if ( isset( $assoc_args['background'] ) ) {
-			$n = WCWG_Retry::queue_replays( $ids, 2 );
+			$n = EVOWG_Retry::queue_replays( $ids, 2 );
 			WP_CLI::success( sprintf( '%d replays queued.', $n ) );
 			return;
 		}
 		$ok = 0;
 		foreach ( $ids as $id ) {
-			$r = WCWG_Retry::replay( (int) $id );
+			$r = EVOWG_Retry::replay( (int) $id );
 			if ( is_wp_error( $r ) ) {
 				WP_CLI::warning( sprintf( '#%d: %s', $id, $r->get_error_message() ) );
 			} else {
@@ -138,7 +138,7 @@ class WCWG_CLI {
 	 * @param array $args Positional.
 	 */
 	public function reenable( $args ) {
-		$r = WCWG_Recovery::reenable( (int) $args[0], true );
+		$r = EVOWG_Recovery::reenable( (int) $args[0], true );
 		if ( is_wp_error( $r ) ) {
 			WP_CLI::error( $r->get_error_message() );
 		}
@@ -149,11 +149,11 @@ class WCWG_CLI {
 	 * Counts for the last 24 hours and the list of disabled webhooks.
 	 */
 	public function stats() {
-		$counts = WCWG_Store::counts( 24 );
+		$counts = EVOWG_Store::counts( 24 );
 		foreach ( $counts as $k => $v ) {
 			WP_CLI::line( sprintf( '%-10s %d', $k, $v ) );
 		}
-		$disabled = wc_load_webhooks( 'disabled' );
+		$disabled = EVOWG_Recovery::webhooks( 'disabled' );
 		WP_CLI::line( sprintf( 'disabled webhooks: %d', count( $disabled ) ) );
 		foreach ( $disabled as $w ) {
 			WP_CLI::line( sprintf( '  #%d %s → %s', $w->get_id(), $w->get_name(), $w->get_delivery_url() ) );

@@ -1,4 +1,4 @@
-# Webhook Guard for WooCommerce
+# Evolurise Webhook Guard for WooCommerce
 
 **Retries failed WooCommerce webhook deliveries, keeps a replayable log, alerts you when a webhook gets disabled and switches it back on.**
 
@@ -54,13 +54,13 @@ wp wc webhook-guard reenable 7
 ```
 WC_Webhook::deliver()
    └─ do_action('woocommerce_webhook_delivery', …)      ← WooCommerce fires this after EVERY attempt
-        └─ WCWG_Retry::on_delivery()
+        └─ EVOWG_Retry::on_delivery()
              ├─ success → row "succeeded"
              ├─ retryable failure & attempts left → row "failed", Action Scheduler job in +delay
              └─ otherwise → row "dead", alert
 
 do_action('woocommerce_webhook_disabled_due_delivery_failures')
-   └─ WCWG_Recovery::on_disabled() → alert, schedule re-enable (delay doubles, cap 6 h)
+   └─ EVOWG_Recovery::on_disabled() → alert, schedule re-enable (delay doubles, cap 6 h)
         └─ reenable(): status=active, failure_count=0, replay dead rows 3 s apart
 ```
 
@@ -72,10 +72,10 @@ Request/response bodies are not stored unless you enable it (they contain person
 
 | Hook | Purpose |
 |---|---|
-| `wcwg_should_retry( $retry, $code, $attempt, $webhook_id, $arg )` | veto or force a retry |
-| `wcwg_delivery_succeeded( $row_id, $row )` / `wcwg_delivery_dead( $row_id, $row )` | react to outcomes |
-| `wcwg_webhook_disabled( $webhook_id, $state )` / `wcwg_webhook_reenabled( $webhook_id, $manual )` | recovery events |
-| `wcwg_alert_payload( $payload, $event )` / `wcwg_alert_sent( $event, $payload )` | alert pipeline |
+| `evowg_should_retry( $retry, $code, $attempt, $webhook_id, $arg )` | veto or force a retry |
+| `evowg_delivery_succeeded( $row_id, $row )` / `evowg_delivery_dead( $row_id, $row )` | react to outcomes |
+| `evowg_webhook_disabled( $webhook_id, $state )` / `evowg_webhook_reenabled( $webhook_id, $manual )` | recovery events |
+| `evowg_alert_payload( $payload, $event )` / `evowg_alert_sent( $event, $payload )` | alert pipeline |
 
 ## Development
 

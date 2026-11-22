@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Decides whether a delivery is a failure and when the next attempt should run.
  */
-class WCWG_Backoff {
+class EVOWG_Backoff {
 
 	/**
 	 * Maximum number of retries after the original delivery.

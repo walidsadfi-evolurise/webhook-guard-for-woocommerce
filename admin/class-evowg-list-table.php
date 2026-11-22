@@ -14,7 +14,7 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 /**
  * List of delivery attempts.
  */
-class WCWG_List_Table extends WP_List_Table {
+class EVOWG_List_Table extends WP_List_Table {
 
 	/**
 	 * Constructor.
@@ -37,16 +37,16 @@ class WCWG_List_Table extends WP_List_Table {
 	public function get_columns() {
 		return array(
 			'cb'            => '<input type="checkbox" />',
-			'id'            => __( 'ID', 'webhook-guard-for-woocommerce' ),
-			'webhook_id'    => __( 'Webhook', 'webhook-guard-for-woocommerce' ),
-			'topic'         => __( 'Topic', 'webhook-guard-for-woocommerce' ),
-			'resource_arg'  => __( 'Resource', 'webhook-guard-for-woocommerce' ),
-			'attempt'       => __( 'Attempt', 'webhook-guard-for-woocommerce' ),
-			'status'        => __( 'Status', 'webhook-guard-for-woocommerce' ),
-			'response_code' => __( 'Response', 'webhook-guard-for-woocommerce' ),
-			'duration'      => __( 'Duration', 'webhook-guard-for-woocommerce' ),
-			'next_retry_at' => __( 'Next retry', 'webhook-guard-for-woocommerce' ),
-			'created_at'    => __( 'When', 'webhook-guard-for-woocommerce' ),
+			'id'            => __( 'ID', 'evolurise-webhook-guard-for-woocommerce' ),
+			'webhook_id'    => __( 'Webhook', 'evolurise-webhook-guard-for-woocommerce' ),
+			'topic'         => __( 'Topic', 'evolurise-webhook-guard-for-woocommerce' ),
+			'resource_arg'  => __( 'Resource', 'evolurise-webhook-guard-for-woocommerce' ),
+			'attempt'       => __( 'Attempt', 'evolurise-webhook-guard-for-woocommerce' ),
+			'status'        => __( 'Status', 'evolurise-webhook-guard-for-woocommerce' ),
+			'response_code' => __( 'Response', 'evolurise-webhook-guard-for-woocommerce' ),
+			'duration'      => __( 'Duration', 'evolurise-webhook-guard-for-woocommerce' ),
+			'next_retry_at' => __( 'Next retry', 'evolurise-webhook-guard-for-woocommerce' ),
+			'created_at'    => __( 'When', 'evolurise-webhook-guard-for-woocommerce' ),
 		);
 	}
 
@@ -72,7 +72,7 @@ class WCWG_List_Table extends WP_List_Table {
 	 * @return array
 	 */
 	public function get_bulk_actions() {
-		return array( 'bulk_replay' => __( 'Replay', 'webhook-guard-for-woocommerce' ) );
+		return array( 'bulk_replay' => __( 'Replay', 'evolurise-webhook-guard-for-woocommerce' ) );
 	}
 
 	/**
@@ -83,17 +83,17 @@ class WCWG_List_Table extends WP_List_Table {
 	protected function get_views() {
 		$current = isset( $_GET['status'] ) ? sanitize_key( wp_unslash( $_GET['status'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$labels  = array(
-			''                          => __( 'All', 'webhook-guard-for-woocommerce' ),
-			WCWG_Store::STATUS_DEAD     => __( 'Dead', 'webhook-guard-for-woocommerce' ),
-			WCWG_Store::STATUS_FAILED   => __( 'Retrying', 'webhook-guard-for-woocommerce' ),
-			WCWG_Store::STATUS_SUCCESS  => __( 'Succeeded', 'webhook-guard-for-woocommerce' ),
-			WCWG_Store::STATUS_REPLAYED => __( 'Replayed', 'webhook-guard-for-woocommerce' ),
+			''                           => __( 'All', 'evolurise-webhook-guard-for-woocommerce' ),
+			EVOWG_Store::STATUS_DEAD     => __( 'Dead', 'evolurise-webhook-guard-for-woocommerce' ),
+			EVOWG_Store::STATUS_FAILED   => __( 'Retrying', 'evolurise-webhook-guard-for-woocommerce' ),
+			EVOWG_Store::STATUS_SUCCESS  => __( 'Succeeded', 'evolurise-webhook-guard-for-woocommerce' ),
+			EVOWG_Store::STATUS_REPLAYED => __( 'Replayed', 'evolurise-webhook-guard-for-woocommerce' ),
 		);
 		$views   = array();
 		foreach ( $labels as $k => $label ) {
 			$url     = add_query_arg(
 				array(
-					'page'   => 'wcwg',
+					'page'   => 'evowg',
 					'status' => $k ? $k : false,
 				),
 				admin_url( 'admin.php' )
@@ -109,7 +109,7 @@ class WCWG_List_Table extends WP_List_Table {
 	public function prepare_items() {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		$per_page = 25;
-		$res      = WCWG_Store::query(
+		$res      = EVOWG_Store::query(
 			array(
 				'status'     => isset( $_GET['status'] ) ? sanitize_key( wp_unslash( $_GET['status'] ) ) : '',
 				'webhook_id' => isset( $_GET['webhook_id'] ) ? (int) $_GET['webhook_id'] : 0,
@@ -158,7 +158,7 @@ class WCWG_List_Table extends WP_List_Table {
 					esc_url(
 						add_query_arg(
 							array(
-								'page'       => 'wcwg',
+								'page'       => 'evowg',
 								'webhook_id' => (int) $item->webhook_id,
 							),
 							admin_url( 'admin.php' )
@@ -168,13 +168,13 @@ class WCWG_List_Table extends WP_List_Table {
 				);
 			case 'status':
 				$labels = array(
-					WCWG_Store::STATUS_SUCCESS  => __( 'Succeeded', 'webhook-guard-for-woocommerce' ),
-					WCWG_Store::STATUS_FAILED   => __( 'Retrying', 'webhook-guard-for-woocommerce' ),
-					WCWG_Store::STATUS_DEAD     => __( 'Dead', 'webhook-guard-for-woocommerce' ),
-					WCWG_Store::STATUS_REPLAYED => __( 'Replayed', 'webhook-guard-for-woocommerce' ),
+					EVOWG_Store::STATUS_SUCCESS  => __( 'Succeeded', 'evolurise-webhook-guard-for-woocommerce' ),
+					EVOWG_Store::STATUS_FAILED   => __( 'Retrying', 'evolurise-webhook-guard-for-woocommerce' ),
+					EVOWG_Store::STATUS_DEAD     => __( 'Dead', 'evolurise-webhook-guard-for-woocommerce' ),
+					EVOWG_Store::STATUS_REPLAYED => __( 'Replayed', 'evolurise-webhook-guard-for-woocommerce' ),
 				);
 				$label  = isset( $labels[ $item->status ] ) ? $labels[ $item->status ] : $item->status;
-				return sprintf( '<span class="wcwg-status wcwg-status-%s">%s</span>', esc_attr( $item->status ), esc_html( $label ) );
+				return sprintf( '<span class="evowg-status evowg-status-%s">%s</span>', esc_attr( $item->status ), esc_html( $label ) );
 			case 'response_code':
 				$out = '<code>' . esc_html( $item->response_code ) . '</code>';
 				if ( $item->error_message ) {
@@ -184,7 +184,7 @@ class WCWG_List_Table extends WP_List_Table {
 			case 'duration':
 				return esc_html( number_format_i18n( (float) $item->duration, 2 ) . ' s' );
 			case 'attempt':
-				return (int) $item->attempt . ( $item->parent_id ? ' <small>' . sprintf( /* translators: %d: row id */ esc_html__( '(of #%d)', 'webhook-guard-for-woocommerce' ), (int) $item->parent_id ) . '</small>' : '' );
+				return (int) $item->attempt . ( $item->parent_id ? ' <small>' . sprintf( /* translators: %d: row id */ esc_html__( '(of #%d)', 'evolurise-webhook-guard-for-woocommerce' ), (int) $item->parent_id ) . '</small>' : '' );
 			case 'next_retry_at':
 			case 'created_at':
 				return $item->$column ? esc_html( get_date_from_gmt( $item->$column, 'Y-m-d H:i:s' ) ) : '—';
@@ -203,19 +203,19 @@ class WCWG_List_Table extends WP_List_Table {
 		$actions = array();
 		if ( '' !== $item->resource_arg ) {
 			$actions['replay'] = sprintf(
-				'<form method="post" action="%s" style="display:inline">%s<input type="hidden" name="action" value="wcwg_action"><input type="hidden" name="do" value="replay"><input type="hidden" name="row_id" value="%d"><button type="submit" class="button-link">%s</button></form>',
+				'<form method="post" action="%s" style="display:inline">%s<input type="hidden" name="action" value="evowg_action"><input type="hidden" name="do" value="replay"><input type="hidden" name="row_id" value="%d"><button type="submit" class="button-link">%s</button></form>',
 				esc_url( admin_url( 'admin-post.php' ) ),
-				wp_nonce_field( 'wcwg_action', '_wpnonce', true, false ),
+				wp_nonce_field( 'evowg_action', '_wpnonce', true, false ),
 				(int) $item->id,
-				esc_html__( 'Replay', 'webhook-guard-for-woocommerce' )
+				esc_html__( 'Replay', 'evolurise-webhook-guard-for-woocommerce' )
 			);
 		}
 		if ( $item->request_body ) {
-			$actions['body'] = sprintf( '<a href="#" class="wcwg-toggle-body" data-id="%d">%s</a>', (int) $item->id, esc_html__( 'Payload', 'webhook-guard-for-woocommerce' ) );
+			$actions['body'] = sprintf( '<a href="#" class="evowg-toggle-body" data-id="%d">%s</a>', (int) $item->id, esc_html__( 'Payload', 'evolurise-webhook-guard-for-woocommerce' ) );
 		}
 		$out = '<strong>#' . (int) $item->id . '</strong>' . $this->row_actions( $actions );
 		if ( $item->request_body ) {
-			$out .= '<pre class="wcwg-body" id="wcwg-body-' . (int) $item->id . '" style="display:none;max-height:240px;overflow:auto;background:#f6f7f7;padding:8px">' . esc_html( $item->request_body ) . "\n\n--- response ---\n" . esc_html( (string) $item->response_body ) . '</pre>';
+			$out .= '<pre class="evowg-body" id="evowg-body-' . (int) $item->id . '" style="display:none;max-height:240px;overflow:auto;background:#f6f7f7;padding:8px">' . esc_html( $item->request_body ) . "\n\n--- response ---\n" . esc_html( (string) $item->response_body ) . '</pre>';
 		}
 		return $out;
 	}
@@ -224,6 +224,6 @@ class WCWG_List_Table extends WP_List_Table {
 	 * Empty state.
 	 */
 	public function no_items() {
-		esc_html_e( 'No deliveries recorded yet. The log fills up as WooCommerce sends webhooks.', 'webhook-guard-for-woocommerce' );
+		esc_html_e( 'No deliveries recorded yet. The log fills up as WooCommerce sends webhooks.', 'evolurise-webhook-guard-for-woocommerce' );
 	}
 }

@@ -10,10 +10,10 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Hooks into woocommerce_webhook_delivery (fired after every attempt WooCommerce makes).
  */
-class WCWG_Retry {
+class EVOWG_Retry {
 
-	const ACTION_RETRY  = 'wcwg_retry_delivery';
-	const ACTION_REPLAY = 'wcwg_replay_delivery';
+	const ACTION_RETRY  = 'evowg_retry_delivery';
+	const ACTION_REPLAY = 'evowg_replay_delivery';
 	const GROUP         = 'wc-webhook-guard';
 
 	/**
@@ -41,7 +41,7 @@ class WCWG_Retry {
 	 * @return int
 	 */
 	public static function max_failures( $max ) {
-		$custom = (int) WCWG_Settings::get( 'max_failures' );
+		$custom = (int) EVOWG_Settings::get( 'max_failures' );
 		return $custom > 0 ? $custom : $max;
 	}
 
@@ -78,10 +78,10 @@ class WCWG_Retry {
 		$parent_id = $ctx ? (int) $ctx['parent_id'] : 0;
 
 		list( $code, $message, $body ) = self::describe_response( $response );
-		$failed                        = WCWG_Backoff::is_failure( $code );
+		$failed                        = EVOWG_Backoff::is_failure( $code );
 		$webhook                       = wc_get_webhook( (int) $webhook_id );
 		$topic                         = $webhook ? $webhook->get_topic() : '';
-		$store_body                    = (bool) WCWG_Settings::get( 'store_body' );
+		$store_body                    = (bool) EVOWG_Settings::get( 'store_body' );
 
 		$row = array(
 			'webhook_id'    => (int) $webhook_id,
@@ -90,7 +90,7 @@ class WCWG_Retry {
 			'resource_arg'  => is_scalar( $arg ) ? (string) $arg : '',
 			'attempt'       => $attempt,
 			'parent_id'     => $parent_id,
-			'status'        => $failed ? WCWG_Store::STATUS_DEAD : WCWG_Store::STATUS_SUCCESS,
+			'status'        => $failed ? EVOWG_Store::STATUS_DEAD : EVOWG_Store::STATUS_SUCCESS,
 			'response_code' => $code,
 			'error_message' => $failed ? $message : null,
 			'duration'      => (float) $duration,
@@ -99,19 +99,19 @@ class WCWG_Retry {
 		);
 
 		if ( ! $failed ) {
-			$id = WCWG_Store::insert( $row );
+			$id = EVOWG_Store::insert( $row );
 			/**
 			 * Fires after a successful delivery was recorded.
 			 *
 			 * @param int   $id  Row ID.
 			 * @param array $row Row.
 			 */
-			do_action( 'wcwg_delivery_succeeded', $id, $row );
+			do_action( 'evowg_delivery_succeeded', $id, $row );
 			return;
 		}
 
-		$backoff   = WCWG_Settings::backoff();
-		$retryable = WCWG_Backoff::is_retryable( $code ) || ( WCWG_Settings::get( 'retry_4xx' ) && is_numeric( $code ) );
+		$backoff   = EVOWG_Settings::backoff();
+		$retryable = EVOWG_Backoff::is_retryable( $code ) || ( EVOWG_Settings::get( 'retry_4xx' ) && is_numeric( $code ) );
 		$can_retry = $retryable && is_scalar( $arg ) && $backoff->can_retry( $attempt );
 
 		/**
@@ -123,13 +123,13 @@ class WCWG_Retry {
 		 * @param int    $webhook_id Webhook ID.
 		 * @param mixed  $arg        Hook argument.
 		 */
-		$can_retry = apply_filters( 'wcwg_should_retry', $can_retry, $code, $attempt, $webhook_id, $arg );
+		$can_retry = apply_filters( 'evowg_should_retry', $can_retry, $code, $attempt, $webhook_id, $arg );
 
 		if ( $can_retry ) {
 			$delay                = $backoff->delay_for( $attempt );
-			$row['status']        = WCWG_Store::STATUS_FAILED;
+			$row['status']        = EVOWG_Store::STATUS_FAILED;
 			$row['next_retry_at'] = gmdate( 'Y-m-d H:i:s', time() + $delay );
-			$id                   = WCWG_Store::insert( $row );
+			$id                   = EVOWG_Store::insert( $row );
 			$root                 = $parent_id ? $parent_id : $id;
 
 			as_schedule_single_action(
@@ -146,15 +146,15 @@ class WCWG_Retry {
 			return;
 		}
 
-		$id = WCWG_Store::insert( $row );
+		$id = EVOWG_Store::insert( $row );
 		/**
 		 * Fires when a delivery is given up (retries exhausted or not retryable).
 		 *
 		 * @param int   $id  Row ID.
 		 * @param array $row Row.
 		 */
-		do_action( 'wcwg_delivery_dead', $id, $row );
-		WCWG_Alerts::send(
+		do_action( 'evowg_delivery_dead', $id, $row );
+		EVOWG_Alerts::send(
 			'dead_delivery',
 			$webhook_id,
 			array(
@@ -182,16 +182,16 @@ class WCWG_Retry {
 		}
 		if ( 'active' !== $webhook->get_status() ) {
 			// WooCommerce disabled it meanwhile: park the event as dead; recovery replays dead rows after a re-enable.
-			WCWG_Store::insert(
+			EVOWG_Store::insert(
 				array(
 					'webhook_id'    => (int) $webhook_id,
 					'topic'         => $webhook->get_topic(),
 					'resource_arg'  => is_scalar( $arg ) ? (string) $arg : '',
 					'attempt'       => (int) $attempt,
 					'parent_id'     => (int) $parent_id,
-					'status'        => WCWG_Store::STATUS_DEAD,
+					'status'        => EVOWG_Store::STATUS_DEAD,
 					'response_code' => 'webhook_disabled',
-					'error_message' => __( 'Webhook was disabled when the retry ran.', 'webhook-guard-for-woocommerce' ),
+					'error_message' => __( 'Webhook was disabled when the retry ran.', 'evolurise-webhook-guard-for-woocommerce' ),
 				)
 			);
 			return;
@@ -211,23 +211,23 @@ class WCWG_Retry {
 	 * @return true|WP_Error
 	 */
 	public static function replay( $row_id ) {
-		$row = WCWG_Store::get( $row_id );
+		$row = EVOWG_Store::get( $row_id );
 		if ( ! $row ) {
-			return new WP_Error( 'wcwg_not_found', __( 'Delivery not found.', 'webhook-guard-for-woocommerce' ) );
+			return new WP_Error( 'evowg_not_found', __( 'Delivery not found.', 'evolurise-webhook-guard-for-woocommerce' ) );
 		}
 		if ( '' === $row->resource_arg ) {
-			return new WP_Error( 'wcwg_no_arg', __( 'This delivery carried a non-scalar argument and cannot be rebuilt.', 'webhook-guard-for-woocommerce' ) );
+			return new WP_Error( 'evowg_no_arg', __( 'This delivery carried a non-scalar argument and cannot be rebuilt.', 'evolurise-webhook-guard-for-woocommerce' ) );
 		}
 		$webhook = wc_get_webhook( (int) $row->webhook_id );
 		if ( ! $webhook ) {
-			return new WP_Error( 'wcwg_no_webhook', __( 'The webhook no longer exists.', 'webhook-guard-for-woocommerce' ) );
+			return new WP_Error( 'evowg_no_webhook', __( 'The webhook no longer exists.', 'evolurise-webhook-guard-for-woocommerce' ) );
 		}
 		if ( 'active' !== $webhook->get_status() ) {
-			return new WP_Error( 'wcwg_inactive', __( 'The webhook is not active. Re-enable it first.', 'webhook-guard-for-woocommerce' ) );
+			return new WP_Error( 'evowg_inactive', __( 'The webhook is not active. Re-enable it first.', 'evolurise-webhook-guard-for-woocommerce' ) );
 		}
 
 		$arg = is_numeric( $row->resource_arg ) ? (int) $row->resource_arg : $row->resource_arg;
-		WCWG_Store::update( $row_id, array( 'status' => WCWG_Store::STATUS_REPLAYED ) );
+		EVOWG_Store::update( $row_id, array( 'status' => EVOWG_Store::STATUS_REPLAYED ) );
 
 		self::$context = array(
 			'attempt'   => 1,

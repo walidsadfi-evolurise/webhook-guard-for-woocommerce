@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * One row per delivery attempt, plus webhook-level events (disabled, re-enabled).
  */
-class WCWG_Store {
+class EVOWG_Store {
 
 	const STATUS_SUCCESS  = 'success';
 	const STATUS_FAILED   = 'failed';   // Failed, a retry is scheduled.
@@ -24,7 +24,7 @@ class WCWG_Store {
 	 */
 	public static function table() {
 		global $wpdb;
-		return $wpdb->prefix . 'wcwg_deliveries';
+		return $wpdb->prefix . 'evowg_deliveries';
 	}
 
 	/**
@@ -59,7 +59,7 @@ class WCWG_Store {
 
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
-		update_option( 'wcwg_db_version', WCWG_VERSION, false );
+		update_option( 'evowg_db_version', EVOWG_VERSION, false );
 	}
 
 	/**

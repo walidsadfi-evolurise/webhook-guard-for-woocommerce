@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Throttled notifications.
  */
-class WCWG_Alerts {
+class EVOWG_Alerts {
 
 	/**
 	 * Send an alert unless the same (event, webhook) pair fired within the throttle window.
@@ -20,8 +20,8 @@ class WCWG_Alerts {
 	 * @param array  $context    Extra data for the message.
 	 */
 	public static function send( $event, $webhook_id, array $context = array() ) {
-		$throttle = (int) WCWG_Settings::get( 'alert_throttle' );
-		$key      = 'wcwg_alert_' . $event . '_' . (int) $webhook_id;
+		$throttle = (int) EVOWG_Settings::get( 'alert_throttle' );
+		$key      = 'evowg_alert_' . $event . '_' . (int) $webhook_id;
 		if ( $throttle > 0 && get_transient( $key ) ) {
 			return;
 		}
@@ -36,23 +36,23 @@ class WCWG_Alerts {
 		$messages = array(
 			'dead_delivery'     => array(
 				/* translators: 1: webhook name, 2: site host */
-				'subject' => sprintf( __( '[%2$s] Webhook "%1$s": a delivery gave up after all retries', 'webhook-guard-for-woocommerce' ), $name, $site ),
-				'body'    => __( 'A WooCommerce webhook delivery failed on every attempt. The receiver never got this event. You can replay it from WooCommerce → Webhook Guard.', 'webhook-guard-for-woocommerce' ),
+				'subject' => sprintf( __( '[%2$s] Webhook "%1$s": a delivery gave up after all retries', 'evolurise-webhook-guard-for-woocommerce' ), $name, $site ),
+				'body'    => __( 'A WooCommerce webhook delivery failed on every attempt. The receiver never got this event. You can replay it from WooCommerce → Webhook Guard.', 'evolurise-webhook-guard-for-woocommerce' ),
 			),
 			'webhook_disabled'  => array(
 				/* translators: 1: webhook name, 2: site host */
-				'subject' => sprintf( __( '[%2$s] Webhook "%1$s" was DISABLED by WooCommerce', 'webhook-guard-for-woocommerce' ), $name, $site ),
-				'body'    => __( 'WooCommerce disabled this webhook after too many consecutive failed deliveries. New events are no longer sent to the receiver until it is re-enabled.', 'webhook-guard-for-woocommerce' ),
+				'subject' => sprintf( __( '[%2$s] Webhook "%1$s" was DISABLED by WooCommerce', 'evolurise-webhook-guard-for-woocommerce' ), $name, $site ),
+				'body'    => __( 'WooCommerce disabled this webhook after too many consecutive failed deliveries. New events are no longer sent to the receiver until it is re-enabled.', 'evolurise-webhook-guard-for-woocommerce' ),
 			),
 			'webhook_reenabled' => array(
 				/* translators: 1: webhook name, 2: site host */
-				'subject' => sprintf( __( '[%2$s] Webhook "%1$s" is active again', 'webhook-guard-for-woocommerce' ), $name, $site ),
-				'body'    => __( 'Webhook Guard re-enabled the webhook. Dead deliveries recorded while it was down are listed under WooCommerce → Webhook Guard and can be replayed in bulk.', 'webhook-guard-for-woocommerce' ),
+				'subject' => sprintf( __( '[%2$s] Webhook "%1$s" is active again', 'evolurise-webhook-guard-for-woocommerce' ), $name, $site ),
+				'body'    => __( 'Webhook Guard re-enabled the webhook. Dead deliveries recorded while it was down are listed under WooCommerce → Webhook Guard and can be replayed in bulk.', 'evolurise-webhook-guard-for-woocommerce' ),
 			),
 			'reenable_gave_up'  => array(
 				/* translators: 1: webhook name, 2: site host */
-				'subject' => sprintf( __( '[%2$s] Webhook "%1$s" could not be re-enabled', 'webhook-guard-for-woocommerce' ), $name, $site ),
-				'body'    => __( 'Every automatic re-enable attempt was followed by new failures. The receiver looks down for good; fix it, then re-enable the webhook manually.', 'webhook-guard-for-woocommerce' ),
+				'subject' => sprintf( __( '[%2$s] Webhook "%1$s" could not be re-enabled', 'evolurise-webhook-guard-for-woocommerce' ), $name, $site ),
+				'body'    => __( 'Every automatic re-enable attempt was followed by new failures. The receiver looks down for good; fix it, then re-enable the webhook manually.', 'evolurise-webhook-guard-for-woocommerce' ),
 			),
 		);
 
@@ -68,7 +68,7 @@ class WCWG_Alerts {
 				'webhook'      => $name,
 				'topic'        => $webhook ? $webhook->get_topic() : '',
 				'delivery_url' => $webhook ? $webhook->get_delivery_url() : '',
-				'admin_url'    => admin_url( 'admin.php?page=wcwg&webhook_id=' . (int) $webhook_id ),
+				'admin_url'    => admin_url( 'admin.php?page=evowg&webhook_id=' . (int) $webhook_id ),
 				'time'         => gmdate( 'c' ),
 			),
 			$context
@@ -80,7 +80,7 @@ class WCWG_Alerts {
 		 * @param array  $payload Payload.
 		 * @param string $event   Event name.
 		 */
-		$payload = apply_filters( 'wcwg_alert_payload', $payload, $event );
+		$payload = apply_filters( 'evowg_alert_payload', $payload, $event );
 
 		self::email( $messages[ $event ]['subject'], $messages[ $event ]['body'], $payload );
 		self::http( $messages[ $event ]['subject'], $payload );
@@ -91,7 +91,7 @@ class WCWG_Alerts {
 		 * @param string $event   Event name.
 		 * @param array  $payload Payload.
 		 */
-		do_action( 'wcwg_alert_sent', $event, $payload );
+		do_action( 'evowg_alert_sent', $event, $payload );
 	}
 
 	/**
@@ -102,7 +102,7 @@ class WCWG_Alerts {
 	 * @param array  $payload Details.
 	 */
 	private static function email( $subject, $body, array $payload ) {
-		$to = WCWG_Settings::get( 'alert_email' );
+		$to = EVOWG_Settings::get( 'alert_email' );
 		if ( '' === $to ) {
 			$to = get_option( 'admin_email' );
 		}
@@ -126,7 +126,7 @@ class WCWG_Alerts {
 	 * @param array  $payload Details.
 	 */
 	private static function http( $subject, array $payload ) {
-		$url = WCWG_Settings::get( 'alert_webhook_url' );
+		$url = EVOWG_Settings::get( 'alert_webhook_url' );
 		if ( ! $url ) {
 			return;
 		}

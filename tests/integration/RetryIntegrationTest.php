@@ -33,9 +33,9 @@ class RetryIntegrationTest extends WP_UnitTestCase {
 		$this->seen = array();
 		add_filter( 'pre_http_request', array( $this, 'fake_receiver' ), 10, 3 );
 		add_filter( 'woocommerce_webhook_deliver_async', '__return_false' );
-		update_option( WCWG_Settings::OPTION, WCWG_Settings::sanitize( array_merge( WCWG_Settings::defaults(), array( 'max_retries' => 2, 'base_delay' => 60, 'alert_throttle' => 0 ) ) ) );
+		update_option( EVOWG_Settings::OPTION, EVOWG_Settings::sanitize( array_merge( EVOWG_Settings::defaults(), array( 'max_retries' => 2, 'base_delay' => 60, 'alert_throttle' => 0 ) ) ) );
 		global $wpdb;
-		$wpdb->query( 'DELETE FROM ' . WCWG_Store::table() ); // phpcs:ignore WordPress.DB
+		$wpdb->query( 'DELETE FROM ' . EVOWG_Store::table() ); // phpcs:ignore WordPress.DB
 	}
 
 	/**
@@ -103,19 +103,19 @@ class RetryIntegrationTest extends WP_UnitTestCase {
 		$this->receiver = 503;
 		$w->deliver( $order->get_id() );
 
-		$rows = WCWG_Store::query( array( 'webhook_id' => $w->get_id() ) );
+		$rows = EVOWG_Store::query( array( 'webhook_id' => $w->get_id() ) );
 		$this->assertSame( 1, $rows['total'] );
-		$this->assertSame( WCWG_Store::STATUS_FAILED, $rows['items'][0]->status );
+		$this->assertSame( EVOWG_Store::STATUS_FAILED, $rows['items'][0]->status );
 		$this->assertSame( '503', $rows['items'][0]->response_code );
-		$this->assertNotFalse( as_next_scheduled_action( WCWG_Retry::ACTION_RETRY, null, WCWG_Retry::GROUP ) );
+		$this->assertNotFalse( as_next_scheduled_action( EVOWG_Retry::ACTION_RETRY, null, EVOWG_Retry::GROUP ) );
 
 		// Receiver recovers; run the scheduled retry by hand.
 		$this->receiver = 200;
-		WCWG_Retry::run_retry( $w->get_id(), $order->get_id(), 2, (int) $rows['items'][0]->id );
+		EVOWG_Retry::run_retry( $w->get_id(), $order->get_id(), 2, (int) $rows['items'][0]->id );
 
-		$rows = WCWG_Store::query( array( 'webhook_id' => $w->get_id(), 'orderby' => 'id', 'order' => 'ASC' ) );
+		$rows = EVOWG_Store::query( array( 'webhook_id' => $w->get_id(), 'orderby' => 'id', 'order' => 'ASC' ) );
 		$this->assertSame( 2, $rows['total'] );
-		$this->assertSame( WCWG_Store::STATUS_SUCCESS, $rows['items'][1]->status );
+		$this->assertSame( EVOWG_Store::STATUS_SUCCESS, $rows['items'][1]->status );
 		$this->assertSame( 2, (int) $rows['items'][1]->attempt );
 		$this->assertSame( (int) $rows['items'][0]->id, (int) $rows['items'][1]->parent_id );
 		$this->assertCount( 2, $this->seen );
@@ -130,7 +130,7 @@ class RetryIntegrationTest extends WP_UnitTestCase {
 		$order = wc_create_order();
 		$alerts = array();
 		add_action(
-			'wcwg_alert_sent',
+			'evowg_alert_sent',
 			function ( $event ) use ( &$alerts ) {
 				$alerts[] = $event;
 			}
@@ -139,9 +139,9 @@ class RetryIntegrationTest extends WP_UnitTestCase {
 		$this->receiver = 404;
 		$w->deliver( $order->get_id() );
 
-		$rows = WCWG_Store::query( array( 'webhook_id' => $w->get_id() ) );
-		$this->assertSame( WCWG_Store::STATUS_DEAD, $rows['items'][0]->status );
-		$this->assertFalse( as_next_scheduled_action( WCWG_Retry::ACTION_RETRY, null, WCWG_Retry::GROUP ) );
+		$rows = EVOWG_Store::query( array( 'webhook_id' => $w->get_id() ) );
+		$this->assertSame( EVOWG_Store::STATUS_DEAD, $rows['items'][0]->status );
+		$this->assertFalse( as_next_scheduled_action( EVOWG_Retry::ACTION_RETRY, null, EVOWG_Retry::GROUP ) );
 		$this->assertContains( 'dead_delivery', $alerts );
 	}
 
@@ -154,15 +154,15 @@ class RetryIntegrationTest extends WP_UnitTestCase {
 
 		$this->receiver = 'error';
 		$w->deliver( $order->get_id() );                                   // attempt 1 → failed
-		$first = WCWG_Store::query( array( 'webhook_id' => $w->get_id() ) )['items'][0];
-		WCWG_Retry::run_retry( $w->get_id(), $order->get_id(), 2, (int) $first->id ); // attempt 2 → failed
-		WCWG_Retry::run_retry( $w->get_id(), $order->get_id(), 3, (int) $first->id ); // attempt 3 → dead
+		$first = EVOWG_Store::query( array( 'webhook_id' => $w->get_id() ) )['items'][0];
+		EVOWG_Retry::run_retry( $w->get_id(), $order->get_id(), 2, (int) $first->id ); // attempt 2 → failed
+		EVOWG_Retry::run_retry( $w->get_id(), $order->get_id(), 3, (int) $first->id ); // attempt 3 → dead
 
-		$rows = WCWG_Store::query( array( 'webhook_id' => $w->get_id(), 'orderby' => 'id', 'order' => 'ASC' ) );
+		$rows = EVOWG_Store::query( array( 'webhook_id' => $w->get_id(), 'orderby' => 'id', 'order' => 'ASC' ) );
 		$this->assertSame( 3, $rows['total'] );
-		$this->assertSame( WCWG_Store::STATUS_FAILED, $rows['items'][0]->status );
-		$this->assertSame( WCWG_Store::STATUS_FAILED, $rows['items'][1]->status );
-		$this->assertSame( WCWG_Store::STATUS_DEAD, $rows['items'][2]->status );
+		$this->assertSame( EVOWG_Store::STATUS_FAILED, $rows['items'][0]->status );
+		$this->assertSame( EVOWG_Store::STATUS_FAILED, $rows['items'][1]->status );
+		$this->assertSame( EVOWG_Store::STATUS_DEAD, $rows['items'][2]->status );
 		$this->assertSame( 'http_request_failed', $rows['items'][2]->response_code );
 	}
 
@@ -173,7 +173,7 @@ class RetryIntegrationTest extends WP_UnitTestCase {
 	public function test_disabled_webhook_is_recovered() {
 		$w     = $this->make_webhook();
 		$order = wc_create_order();
-		update_option( WCWG_Settings::OPTION, WCWG_Settings::sanitize( array_merge( WCWG_Settings::defaults(), array( 'max_retries' => 0, 'alert_throttle' => 0 ) ) ) );
+		update_option( EVOWG_Settings::OPTION, EVOWG_Settings::sanitize( array_merge( EVOWG_Settings::defaults(), array( 'max_retries' => 0, 'alert_throttle' => 0 ) ) ) );
 
 		$this->receiver = 500;
 		for ( $i = 0; $i < 7; $i++ ) {
@@ -182,24 +182,42 @@ class RetryIntegrationTest extends WP_UnitTestCase {
 		}
 		$w = wc_get_webhook( $w->get_id() );
 		$this->assertSame( 'disabled', $w->get_status(), 'WooCommerce should have disabled the webhook' );
-		$this->assertNotFalse( as_next_scheduled_action( WCWG_Recovery::ACTION_REENABLE, array( 'webhook_id' => $w->get_id() ), WCWG_Retry::GROUP ) );
-		$this->assertGreaterThan( 0, count( WCWG_Store::dead_for_webhook( $w->get_id() ) ) );
+		$this->assertNotFalse( as_next_scheduled_action( EVOWG_Recovery::ACTION_REENABLE, array( 'webhook_id' => $w->get_id() ), EVOWG_Retry::GROUP ) );
+		$this->assertGreaterThan( 0, count( EVOWG_Store::dead_for_webhook( $w->get_id() ) ) );
 
 		$this->receiver = 200;
-		$queued = WCWG_Recovery::reenable( $w->get_id(), false );
+		$queued = EVOWG_Recovery::reenable( $w->get_id(), false );
 		$w      = wc_get_webhook( $w->get_id() );
 		$this->assertSame( 'active', $w->get_status() );
 		$this->assertSame( 0, $w->get_failure_count() );
 		$this->assertGreaterThan( 0, $queued );
-		$this->assertNotFalse( as_next_scheduled_action( WCWG_Retry::ACTION_REPLAY, null, WCWG_Retry::GROUP ) );
+		$this->assertNotFalse( as_next_scheduled_action( EVOWG_Retry::ACTION_REPLAY, null, EVOWG_Retry::GROUP ) );
 
 		// Run one replay by hand and check it succeeds and marks the source row replayed.
-		$dead = WCWG_Store::dead_for_webhook( $w->get_id() );
-		$res  = WCWG_Retry::replay( (int) $dead[0]->id );
+		$dead = EVOWG_Store::dead_for_webhook( $w->get_id() );
+		$res  = EVOWG_Retry::replay( (int) $dead[0]->id );
 		$this->assertTrue( $res );
-		$this->assertSame( WCWG_Store::STATUS_REPLAYED, WCWG_Store::get( (int) $dead[0]->id )->status );
-		$latest = WCWG_Store::query( array( 'webhook_id' => $w->get_id(), 'per_page' => 1 ) )['items'][0];
-		$this->assertSame( WCWG_Store::STATUS_SUCCESS, $latest->status );
+		$this->assertSame( EVOWG_Store::STATUS_REPLAYED, EVOWG_Store::get( (int) $dead[0]->id )->status );
+		$latest = EVOWG_Store::query( array( 'webhook_id' => $w->get_id(), 'per_page' => 1 ) )['items'][0];
+		$this->assertSame( EVOWG_Store::STATUS_SUCCESS, $latest->status );
 		$this->assertSame( (int) $dead[0]->id, (int) $latest->parent_id );
+	}
+
+	/**
+	 * The admin screens, Site Health and the CLI list real webhook objects, by status.
+	 */
+	public function test_webhooks_lists_webhook_objects_by_status() {
+		$active   = $this->make_webhook();
+		$disabled = $this->make_webhook();
+		$disabled->set_status( 'disabled' );
+		$disabled->save();
+
+		$all_ids      = array_map( fn( $w ) => $w->get_id(), EVOWG_Recovery::webhooks() );
+		$disabled_ids = array_map( fn( $w ) => $w->get_id(), EVOWG_Recovery::webhooks( 'disabled' ) );
+
+		$this->assertContains( $active->get_id(), $all_ids );
+		$this->assertContains( $disabled->get_id(), $all_ids );
+		$this->assertSame( array( $disabled->get_id() ), $disabled_ids );
+		$this->assertInstanceOf( WC_Webhook::class, EVOWG_Recovery::webhooks()[0] );
 	}
 }

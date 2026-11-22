@@ -14,10 +14,10 @@ if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
 	define( 'DAY_IN_SECONDS', 86400 );
 }
 
-require_once __DIR__ . '/../includes/class-wcwg-backoff.php';
-require_once __DIR__ . '/../includes/class-wcwg-settings.php';
+require_once __DIR__ . '/../includes/class-evowg-backoff.php';
+require_once __DIR__ . '/../includes/class-evowg-settings.php';
 
-// Minimal stand-ins for the two WordPress functions WCWG_Settings uses.
+// Minimal stand-ins for the two WordPress functions EVOWG_Settings uses.
 if ( ! function_exists( 'get_option' ) ) {
 	/**
 	 * In-memory options.
@@ -27,7 +27,7 @@ if ( ! function_exists( 'get_option' ) ) {
 	 * @return mixed
 	 */
 	function get_option( $key, $default = false ) {
-		return isset( $GLOBALS['wcwg_test_options'][ $key ] ) ? $GLOBALS['wcwg_test_options'][ $key ] : $default;
+		return isset( $GLOBALS['evowg_test_options'][ $key ] ) ? $GLOBALS['evowg_test_options'][ $key ] : $default;
 	}
 }
 if ( ! function_exists( 'sanitize_email' ) ) {

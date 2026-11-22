@@ -10,9 +10,9 @@ defined( 'ABSPATH' ) || exit;
 /**
  * One option row, typed accessors.
  */
-class WCWG_Settings {
+class EVOWG_Settings {
 
-	const OPTION = 'wcwg_settings';
+	const OPTION = 'evowg_settings';
 
 	/**
 	 * Defaults.
@@ -100,10 +100,10 @@ class WCWG_Settings {
 	/**
 	 * Backoff policy built from settings.
 	 *
-	 * @return WCWG_Backoff
+	 * @return EVOWG_Backoff
 	 */
 	public static function backoff() {
 		$s = self::all();
-		return new WCWG_Backoff( $s['max_retries'], $s['base_delay'], $s['multiplier'], $s['max_delay'] );
+		return new EVOWG_Backoff( $s['max_retries'], $s['base_delay'], $s['multiplier'], $s['max_delay'] );
 	}
 }

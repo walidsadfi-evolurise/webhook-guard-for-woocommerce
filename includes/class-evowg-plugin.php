@@ -10,21 +10,21 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Wires everything together once WooCommerce is loaded.
  */
-class WCWG_Plugin {
+class EVOWG_Plugin {
 
-	const CRON_PURGE = 'wcwg_purge_log';
+	const CRON_PURGE = 'evowg_purge_log';
 
 	/**
 	 * Singleton.
 	 *
-	 * @var WCWG_Plugin|null
+	 * @var EVOWG_Plugin|null
 	 */
 	private static $instance = null;
 
 	/**
 	 * Instance.
 	 *
-	 * @return WCWG_Plugin
+	 * @return EVOWG_Plugin
 	 */
 	public static function instance() {
 		if ( null === self::$instance ) {
@@ -42,13 +42,13 @@ class WCWG_Plugin {
 			return;
 		}
 
-		if ( get_option( 'wcwg_db_version' ) !== WCWG_VERSION ) {
-			WCWG_Store::install();
+		if ( get_option( 'evowg_db_version' ) !== EVOWG_VERSION ) {
+			EVOWG_Store::install();
 		}
 
-		WCWG_Retry::init();
-		WCWG_Recovery::init();
-		WCWG_Site_Health::init();
+		EVOWG_Retry::init();
+		EVOWG_Recovery::init();
+		EVOWG_Site_Health::init();
 
 		add_action( self::CRON_PURGE, array( $this, 'purge' ) );
 		if ( ! wp_next_scheduled( self::CRON_PURGE ) ) {
@@ -56,13 +56,13 @@ class WCWG_Plugin {
 		}
 
 		if ( is_admin() ) {
-			require_once WCWG_DIR . 'admin/class-wcwg-admin.php';
-			WCWG_Admin::init();
+			require_once EVOWG_DIR . 'admin/class-evowg-admin.php';
+			EVOWG_Admin::init();
 		}
 
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
-			require_once WCWG_DIR . 'includes/class-wcwg-cli.php';
-			WP_CLI::add_command( 'wc webhook-guard', 'WCWG_CLI' );
+			require_once EVOWG_DIR . 'includes/class-evowg-cli.php';
+			WP_CLI::add_command( 'wc webhook-guard', 'EVOWG_CLI' );
 		}
 	}
 
@@ -70,21 +70,21 @@ class WCWG_Plugin {
 	 * Notice when WooCommerce is absent.
 	 */
 	public function missing_woocommerce_notice() {
-		echo '<div class="notice notice-error"><p>' . esc_html__( 'Webhook Guard for WooCommerce needs WooCommerce 8.0 or newer to be active.', 'webhook-guard-for-woocommerce' ) . '</p></div>';
+		echo '<div class="notice notice-error"><p>' . esc_html__( 'Evolurise Webhook Guard for WooCommerce needs WooCommerce 8.0 or newer to be active.', 'evolurise-webhook-guard-for-woocommerce' ) . '</p></div>';
 	}
 
 	/**
 	 * Daily purge.
 	 */
 	public function purge() {
-		WCWG_Store::purge( (int) WCWG_Settings::get( 'retention_days' ) );
+		EVOWG_Store::purge( (int) EVOWG_Settings::get( 'retention_days' ) );
 	}
 
 	/**
 	 * Activation: create the table.
 	 */
 	public static function activate() {
-		WCWG_Store::install();
+		EVOWG_Store::install();
 	}
 
 	/**
@@ -96,9 +96,9 @@ class WCWG_Plugin {
 			wp_unschedule_event( $ts, self::CRON_PURGE );
 		}
 		if ( function_exists( 'as_unschedule_all_actions' ) ) {
-			as_unschedule_all_actions( WCWG_Retry::ACTION_RETRY, array(), WCWG_Retry::GROUP );
-			as_unschedule_all_actions( WCWG_Retry::ACTION_REPLAY, array(), WCWG_Retry::GROUP );
-			as_unschedule_all_actions( WCWG_Recovery::ACTION_REENABLE, array(), WCWG_Retry::GROUP );
+			as_unschedule_all_actions( EVOWG_Retry::ACTION_RETRY, array(), EVOWG_Retry::GROUP );
+			as_unschedule_all_actions( EVOWG_Retry::ACTION_REPLAY, array(), EVOWG_Retry::GROUP );
+			as_unschedule_all_actions( EVOWG_Recovery::ACTION_REENABLE, array(), EVOWG_Retry::GROUP );
 		}
 	}
 }

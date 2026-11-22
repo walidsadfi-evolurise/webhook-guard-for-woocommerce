@@ -1,4 +1,4 @@
-=== Webhook Guard for WooCommerce ===
+=== Evolurise Webhook Guard for WooCommerce ===
 Contributors: evolurise
 Tags: woocommerce, webhooks, retry, integration, monitoring
 Requires at least: 6.4
@@ -38,10 +38,10 @@ Request and response bodies are **not stored** unless you enable it in the setti
 
 = Hooks for developers =
 
-* `wcwg_should_retry( bool $retry, string $code, int $attempt, int $webhook_id, mixed $arg )` — veto or force a retry.
-* `wcwg_delivery_succeeded( int $row_id, array $row )`, `wcwg_delivery_dead( int $row_id, array $row )`.
-* `wcwg_webhook_disabled( int $webhook_id, array $state )`, `wcwg_webhook_reenabled( int $webhook_id, bool $manual )`.
-* `wcwg_alert_payload( array $payload, string $event )`, `wcwg_alert_sent( string $event, array $payload )`.
+* `evowg_should_retry( bool $retry, string $code, int $attempt, int $webhook_id, mixed $arg )` — veto or force a retry.
+* `evowg_delivery_succeeded( int $row_id, array $row )`, `evowg_delivery_dead( int $row_id, array $row )`.
+* `evowg_webhook_disabled( int $webhook_id, array $state )`, `evowg_webhook_reenabled( int $webhook_id, bool $manual )`.
+* `evowg_alert_payload( array $payload, string $event )`, `evowg_alert_sent( string $event, array $payload )`.
 
 Compatible with High-Performance Order Storage. Needs WooCommerce 8.0 or newer (Action Scheduler is bundled with WooCommerce).
 

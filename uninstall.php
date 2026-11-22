@@ -9,22 +9,22 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 global $wpdb;
 
-$wcwg_table = $wpdb->prefix . 'wcwg_deliveries';
-$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wcwg_table ) ); // phpcs:ignore WordPress.DB
+$evowg_table = $wpdb->prefix . 'evowg_deliveries';
+$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $evowg_table ) ); // phpcs:ignore WordPress.DB
 
-delete_option( 'wcwg_settings' );
-delete_option( 'wcwg_db_version' );
-delete_option( 'wcwg_webhook_state' );
+delete_option( 'evowg_settings' );
+delete_option( 'evowg_db_version' );
+delete_option( 'evowg_webhook_state' );
 
-$wcwg_transients = $wpdb->get_col( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '_transient_wcwg_alert_%' OR option_name LIKE '_transient_timeout_wcwg_alert_%'" ); // phpcs:ignore WordPress.DB
-foreach ( (array) $wcwg_transients as $wcwg_name ) {
-	delete_option( $wcwg_name );
+$evowg_transients = $wpdb->get_col( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE '_transient_evowg_alert_%' OR option_name LIKE '_transient_timeout_evowg_alert_%'" ); // phpcs:ignore WordPress.DB
+foreach ( (array) $evowg_transients as $evowg_name ) {
+	delete_option( $evowg_name );
 }
 
-wp_clear_scheduled_hook( 'wcwg_purge_log' );
+wp_clear_scheduled_hook( 'evowg_purge_log' );
 
 if ( function_exists( 'as_unschedule_all_actions' ) ) {
-	as_unschedule_all_actions( 'wcwg_retry_delivery', array(), 'wc-webhook-guard' );
-	as_unschedule_all_actions( 'wcwg_replay_delivery', array(), 'wc-webhook-guard' );
-	as_unschedule_all_actions( 'wcwg_reenable_webhook', array(), 'wc-webhook-guard' );
+	as_unschedule_all_actions( 'evowg_retry_delivery', array(), 'wc-webhook-guard' );
+	as_unschedule_all_actions( 'evowg_replay_delivery', array(), 'wc-webhook-guard' );
+	as_unschedule_all_actions( 'evowg_reenable_webhook', array(), 'wc-webhook-guard' );
 }

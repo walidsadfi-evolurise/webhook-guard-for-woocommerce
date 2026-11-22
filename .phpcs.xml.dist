@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ruleset name="Webhook Guard">
-    <description>WordPress coding standards for Webhook Guard for WooCommerce.</description>
+    <description>WordPress coding standards for Evolurise Webhook Guard for WooCommerce.</description>
     <file>.</file>
     <exclude-pattern>/vendor/*</exclude-pattern>
     <exclude-pattern>/node_modules/*</exclude-pattern>
@@ -16,12 +16,12 @@
     <rule ref="PHPCompatibilityWP"/>
     <rule ref="WordPress.WP.I18n">
         <properties>
-            <property name="text_domain" type="array"><element value="webhook-guard-for-woocommerce"/></property>
+            <property name="text_domain" type="array"><element value="evolurise-webhook-guard-for-woocommerce"/></property>
         </properties>
     </rule>
     <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
         <properties>
-            <property name="prefixes" type="array"><element value="wcwg"/><element value="WCWG"/></property>
+            <property name="prefixes" type="array"><element value="evowg"/><element value="EVOWG"/></property>
         </properties>
     </rule>
     <rule ref="WordPress.WP.Capabilities">

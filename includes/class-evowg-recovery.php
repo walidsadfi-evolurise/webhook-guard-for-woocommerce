@@ -10,10 +10,10 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Disabled-webhook recovery.
  */
-class WCWG_Recovery {
+class EVOWG_Recovery {
 
-	const ACTION_REENABLE = 'wcwg_reenable_webhook';
-	const STATE_OPTION    = 'wcwg_webhook_state';
+	const ACTION_REENABLE = 'evowg_reenable_webhook';
+	const STATE_OPTION    = 'evowg_webhook_state';
 
 	/**
 	 * Register hooks.
@@ -21,7 +21,7 @@ class WCWG_Recovery {
 	public static function init() {
 		add_action( 'woocommerce_webhook_disabled_due_delivery_failures', array( __CLASS__, 'on_disabled' ) );
 		add_action( self::ACTION_REENABLE, array( __CLASS__, 'run_reenable' ), 10, 1 );
-		add_action( 'wcwg_delivery_succeeded', array( __CLASS__, 'on_success' ), 10, 2 );
+		add_action( 'evowg_delivery_succeeded', array( __CLASS__, 'on_success' ), 10, 2 );
 	}
 
 	/**
@@ -97,23 +97,23 @@ class WCWG_Recovery {
 		 * @param int   $webhook_id Webhook ID.
 		 * @param array $state      Recovery state.
 		 */
-		do_action( 'wcwg_webhook_disabled', $webhook_id, $state );
+		do_action( 'evowg_webhook_disabled', $webhook_id, $state );
 
-		WCWG_Alerts::send( 'webhook_disabled', $webhook_id, array( 'reenable_attempts_so_far' => (int) $state['reenable_attempts'] ) );
+		EVOWG_Alerts::send( 'webhook_disabled', $webhook_id, array( 'reenable_attempts_so_far' => (int) $state['reenable_attempts'] ) );
 
-		if ( ! WCWG_Settings::get( 'auto_reenable' ) ) {
+		if ( ! EVOWG_Settings::get( 'auto_reenable' ) ) {
 			return;
 		}
 
-		$max = (int) WCWG_Settings::get( 'reenable_max' );
+		$max = (int) EVOWG_Settings::get( 'reenable_max' );
 		if ( $state['reenable_attempts'] >= $max ) {
-			WCWG_Alerts::send( 'reenable_gave_up', $webhook_id, array( 'attempts' => (int) $state['reenable_attempts'] ) );
+			EVOWG_Alerts::send( 'reenable_gave_up', $webhook_id, array( 'attempts' => (int) $state['reenable_attempts'] ) );
 			return;
 		}
 
 		$delay = self::reenable_delay( (int) $state['reenable_attempts'] );
-		if ( false === as_next_scheduled_action( self::ACTION_REENABLE, array( 'webhook_id' => $webhook_id ), WCWG_Retry::GROUP ) ) {
-			as_schedule_single_action( time() + $delay, self::ACTION_REENABLE, array( 'webhook_id' => $webhook_id ), WCWG_Retry::GROUP );
+		if ( false === as_next_scheduled_action( self::ACTION_REENABLE, array( 'webhook_id' => $webhook_id ), EVOWG_Retry::GROUP ) ) {
+			as_schedule_single_action( time() + $delay, self::ACTION_REENABLE, array( 'webhook_id' => $webhook_id ), EVOWG_Retry::GROUP );
 		}
 	}
 
@@ -124,7 +124,7 @@ class WCWG_Recovery {
 	 * @return int Seconds.
 	 */
 	public static function reenable_delay( $attempts ) {
-		$base = (int) WCWG_Settings::get( 'reenable_delay' );
+		$base = (int) EVOWG_Settings::get( 'reenable_delay' );
 		return (int) min( 6 * HOUR_IN_SECONDS, $base * pow( 2, max( 0, $attempts ) ) );
 	}
 
@@ -147,7 +147,7 @@ class WCWG_Recovery {
 	public static function reenable( $webhook_id, $manual = false ) {
 		$webhook = wc_get_webhook( (int) $webhook_id );
 		if ( ! $webhook ) {
-			return new WP_Error( 'wcwg_no_webhook', __( 'Webhook not found.', 'webhook-guard-for-woocommerce' ) );
+			return new WP_Error( 'evowg_no_webhook', __( 'Webhook not found.', 'evolurise-webhook-guard-for-woocommerce' ) );
 		}
 
 		$state = self::state( $webhook_id );
@@ -171,10 +171,10 @@ class WCWG_Recovery {
 		 * @param int  $webhook_id Webhook ID.
 		 * @param bool $manual     Manual or automatic.
 		 */
-		do_action( 'wcwg_webhook_reenabled', $webhook_id, $manual );
-		WCWG_Alerts::send( 'webhook_reenabled', $webhook_id, array( 'manual' => $manual ? 'yes' : 'no' ) );
+		do_action( 'evowg_webhook_reenabled', $webhook_id, $manual );
+		EVOWG_Alerts::send( 'webhook_reenabled', $webhook_id, array( 'manual' => $manual ? 'yes' : 'no' ) );
 
-		$dead = WCWG_Store::dead_for_webhook( $webhook_id, 200 );
+		$dead = EVOWG_Store::dead_for_webhook( $webhook_id, 200 );
 		$ids  = array();
 		foreach ( $dead as $row ) {
 			if ( '' !== $row->resource_arg ) {
@@ -182,6 +182,22 @@ class WCWG_Recovery {
 			}
 		}
 		// Oldest first, 3 seconds apart: a receiver that just came back is not flooded.
-		return WCWG_Retry::queue_replays( $ids, 3 );
+		return EVOWG_Retry::queue_replays( $ids, 3 );
+	}
+
+	/**
+	 * WooCommerce webhooks, as objects.
+	 *
+	 * Note: wc_load_webhooks() is not a getter: it hooks the webhooks in and returns a boolean.
+	 *
+	 * @param string $status '' for all, or active, paused, disabled.
+	 * @return WC_Webhook[]
+	 */
+	public static function webhooks( $status = '' ) {
+		if ( ! class_exists( 'WC_Data_Store' ) ) {
+			return array();
+		}
+		$ids = WC_Data_Store::load( 'webhook' )->get_webhooks_ids( $status );
+		return array_values( array_filter( array_map( 'wc_get_webhook', (array) $ids ) ) );
 	}
 }
