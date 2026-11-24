@@ -62,7 +62,7 @@ class EVOWG_Plugin {
 
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			require_once EVOWG_DIR . 'includes/class-evowg-cli.php';
-			WP_CLI::add_command( 'wc webhook-guard', 'EVOWG_CLI' );
+			WP_CLI::add_command( 'wc webhook-recovery', 'EVOWG_CLI' );
 		}
 	}
 
@@ -70,7 +70,11 @@ class EVOWG_Plugin {
 	 * Notice when WooCommerce is absent.
 	 */
 	public function missing_woocommerce_notice() {
-		echo '<div class="notice notice-error"><p>' . esc_html__( 'Evolurise Webhook Guard for WooCommerce needs WooCommerce 8.0 or newer to be active.', 'evolurise-webhook-guard-for-woocommerce' ) . '</p></div>';
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'plugins' !== $screen->id || ! current_user_can( 'activate_plugins' ) ) {
+			return;
+		}
+		echo '<div class="notice notice-error"><p>' . esc_html__( 'Evolurise Webhook Delivery Recovery for WooCommerce needs WooCommerce 8.0 or newer to be active.', 'evolurise-webhook-delivery-recovery' ) . '</p></div>';
 	}
 
 	/**

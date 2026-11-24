@@ -92,7 +92,7 @@ class EVOWG_Recovery {
 		self::set_state( $webhook_id, $state );
 
 		/**
-		 * Fires when WooCommerce disabled a webhook and Webhook Guard recorded it.
+		 * Fires when WooCommerce disabled a webhook and Webhook Delivery Recovery recorded it.
 		 *
 		 * @param int   $webhook_id Webhook ID.
 		 * @param array $state      Recovery state.
@@ -147,7 +147,7 @@ class EVOWG_Recovery {
 	public static function reenable( $webhook_id, $manual = false ) {
 		$webhook = wc_get_webhook( (int) $webhook_id );
 		if ( ! $webhook ) {
-			return new WP_Error( 'evowg_no_webhook', __( 'Webhook not found.', 'evolurise-webhook-guard-for-woocommerce' ) );
+			return new WP_Error( 'evowg_no_webhook', __( 'Webhook not found.', 'evolurise-webhook-delivery-recovery' ) );
 		}
 
 		$state = self::state( $webhook_id );
@@ -166,7 +166,7 @@ class EVOWG_Recovery {
 		$webhook->save();
 
 		/**
-		 * Fires after Webhook Guard re-enabled a webhook.
+		 * Fires after Webhook Delivery Recovery re-enabled a webhook.
 		 *
 		 * @param int  $webhook_id Webhook ID.
 		 * @param bool $manual     Manual or automatic.

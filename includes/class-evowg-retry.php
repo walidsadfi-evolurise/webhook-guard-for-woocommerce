@@ -14,7 +14,7 @@ class EVOWG_Retry {
 
 	const ACTION_RETRY  = 'evowg_retry_delivery';
 	const ACTION_REPLAY = 'evowg_replay_delivery';
-	const GROUP         = 'wc-webhook-guard';
+	const GROUP         = 'evowg';
 
 	/**
 	 * Context of the attempt currently running, set by the retry/replay handlers so the
@@ -191,7 +191,7 @@ class EVOWG_Retry {
 					'parent_id'     => (int) $parent_id,
 					'status'        => EVOWG_Store::STATUS_DEAD,
 					'response_code' => 'webhook_disabled',
-					'error_message' => __( 'Webhook was disabled when the retry ran.', 'evolurise-webhook-guard-for-woocommerce' ),
+					'error_message' => __( 'Webhook was disabled when the retry ran.', 'evolurise-webhook-delivery-recovery' ),
 				)
 			);
 			return;
@@ -213,17 +213,17 @@ class EVOWG_Retry {
 	public static function replay( $row_id ) {
 		$row = EVOWG_Store::get( $row_id );
 		if ( ! $row ) {
-			return new WP_Error( 'evowg_not_found', __( 'Delivery not found.', 'evolurise-webhook-guard-for-woocommerce' ) );
+			return new WP_Error( 'evowg_not_found', __( 'Delivery not found.', 'evolurise-webhook-delivery-recovery' ) );
 		}
 		if ( '' === $row->resource_arg ) {
-			return new WP_Error( 'evowg_no_arg', __( 'This delivery carried a non-scalar argument and cannot be rebuilt.', 'evolurise-webhook-guard-for-woocommerce' ) );
+			return new WP_Error( 'evowg_no_arg', __( 'This delivery carried a non-scalar argument and cannot be rebuilt.', 'evolurise-webhook-delivery-recovery' ) );
 		}
 		$webhook = wc_get_webhook( (int) $row->webhook_id );
 		if ( ! $webhook ) {
-			return new WP_Error( 'evowg_no_webhook', __( 'The webhook no longer exists.', 'evolurise-webhook-guard-for-woocommerce' ) );
+			return new WP_Error( 'evowg_no_webhook', __( 'The webhook no longer exists.', 'evolurise-webhook-delivery-recovery' ) );
 		}
 		if ( 'active' !== $webhook->get_status() ) {
-			return new WP_Error( 'evowg_inactive', __( 'The webhook is not active. Re-enable it first.', 'evolurise-webhook-guard-for-woocommerce' ) );
+			return new WP_Error( 'evowg_inactive', __( 'The webhook is not active. Re-enable it first.', 'evolurise-webhook-delivery-recovery' ) );
 		}
 
 		$arg = is_numeric( $row->resource_arg ) ? (int) $row->resource_arg : $row->resource_arg;

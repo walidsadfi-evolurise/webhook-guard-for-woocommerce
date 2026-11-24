@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name:       Evolurise Webhook Guard for WooCommerce
+ * Plugin Name:       Evolurise Webhook Delivery Recovery for WooCommerce
  * Plugin URI:        https://github.com/walidsadfi-evolurise/webhook-guard-for-woocommerce
  * Description:       Retries failed WooCommerce webhook deliveries with exponential backoff, keeps a replayable delivery log, alerts you when a webhook is disabled and re-enables it automatically.
  * Version:           1.0.0
@@ -11,7 +11,7 @@
  * Author URI:        https://evolurise.com
  * License:           GPLv2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain:       evolurise-webhook-guard-for-woocommerce
+ * Text Domain:       evolurise-webhook-delivery-recovery
  * WC requires at least: 8.0
  * WC tested up to:   11.3
  *

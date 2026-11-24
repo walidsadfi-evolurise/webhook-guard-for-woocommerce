@@ -1,5 +1,5 @@
 /**
- * Evolurise Webhook Guard for WooCommerce: delivery log screen.
+ * Evolurise Webhook Delivery Recovery for WooCommerce: delivery log screen.
  * Shows or hides the payload of a delivery row.
  */
 ( function () {

@@ -36,23 +36,23 @@ class EVOWG_Alerts {
 		$messages = array(
 			'dead_delivery'     => array(
 				/* translators: 1: webhook name, 2: site host */
-				'subject' => sprintf( __( '[%2$s] Webhook "%1$s": a delivery gave up after all retries', 'evolurise-webhook-guard-for-woocommerce' ), $name, $site ),
-				'body'    => __( 'A WooCommerce webhook delivery failed on every attempt. The receiver never got this event. You can replay it from WooCommerce → Webhook Guard.', 'evolurise-webhook-guard-for-woocommerce' ),
+				'subject' => sprintf( __( '[%2$s] Webhook "%1$s": a delivery gave up after all retries', 'evolurise-webhook-delivery-recovery' ), $name, $site ),
+				'body'    => __( 'A WooCommerce webhook delivery failed on every attempt. The receiver never got this event. You can replay it from WooCommerce → Webhook Delivery Recovery.', 'evolurise-webhook-delivery-recovery' ),
 			),
 			'webhook_disabled'  => array(
 				/* translators: 1: webhook name, 2: site host */
-				'subject' => sprintf( __( '[%2$s] Webhook "%1$s" was DISABLED by WooCommerce', 'evolurise-webhook-guard-for-woocommerce' ), $name, $site ),
-				'body'    => __( 'WooCommerce disabled this webhook after too many consecutive failed deliveries. New events are no longer sent to the receiver until it is re-enabled.', 'evolurise-webhook-guard-for-woocommerce' ),
+				'subject' => sprintf( __( '[%2$s] Webhook "%1$s" was DISABLED by WooCommerce', 'evolurise-webhook-delivery-recovery' ), $name, $site ),
+				'body'    => __( 'WooCommerce disabled this webhook after too many consecutive failed deliveries. New events are no longer sent to the receiver until it is re-enabled.', 'evolurise-webhook-delivery-recovery' ),
 			),
 			'webhook_reenabled' => array(
 				/* translators: 1: webhook name, 2: site host */
-				'subject' => sprintf( __( '[%2$s] Webhook "%1$s" is active again', 'evolurise-webhook-guard-for-woocommerce' ), $name, $site ),
-				'body'    => __( 'Webhook Guard re-enabled the webhook. Dead deliveries recorded while it was down are listed under WooCommerce → Webhook Guard and can be replayed in bulk.', 'evolurise-webhook-guard-for-woocommerce' ),
+				'subject' => sprintf( __( '[%2$s] Webhook "%1$s" is active again', 'evolurise-webhook-delivery-recovery' ), $name, $site ),
+				'body'    => __( 'Webhook Delivery Recovery re-enabled the webhook. Dead deliveries recorded while it was down are listed under WooCommerce → Webhook Delivery Recovery and can be replayed in bulk.', 'evolurise-webhook-delivery-recovery' ),
 			),
 			'reenable_gave_up'  => array(
 				/* translators: 1: webhook name, 2: site host */
-				'subject' => sprintf( __( '[%2$s] Webhook "%1$s" could not be re-enabled', 'evolurise-webhook-guard-for-woocommerce' ), $name, $site ),
-				'body'    => __( 'Every automatic re-enable attempt was followed by new failures. The receiver looks down for good; fix it, then re-enable the webhook manually.', 'evolurise-webhook-guard-for-woocommerce' ),
+				'subject' => sprintf( __( '[%2$s] Webhook "%1$s" could not be re-enabled', 'evolurise-webhook-delivery-recovery' ), $name, $site ),
+				'body'    => __( 'Every automatic re-enable attempt was followed by new failures. The receiver looks down for good; fix it, then re-enable the webhook manually.', 'evolurise-webhook-delivery-recovery' ),
 			),
 		);
 

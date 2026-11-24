@@ -12,19 +12,19 @@ $evowg_webhooks = EVOWG_Recovery::webhooks();
 <table class="widefat striped" style="margin-top:16px">
 	<thead>
 		<tr>
-			<th><?php esc_html_e( 'Webhook', 'evolurise-webhook-guard-for-woocommerce' ); ?></th>
-			<th><?php esc_html_e( 'Topic', 'evolurise-webhook-guard-for-woocommerce' ); ?></th>
-			<th><?php esc_html_e( 'Delivery URL', 'evolurise-webhook-guard-for-woocommerce' ); ?></th>
-			<th><?php esc_html_e( 'Status', 'evolurise-webhook-guard-for-woocommerce' ); ?></th>
-			<th><?php esc_html_e( 'Consecutive failures', 'evolurise-webhook-guard-for-woocommerce' ); ?></th>
-			<th><?php esc_html_e( 'Dead deliveries', 'evolurise-webhook-guard-for-woocommerce' ); ?></th>
-			<th><?php esc_html_e( 'Auto re-enable', 'evolurise-webhook-guard-for-woocommerce' ); ?></th>
+			<th><?php esc_html_e( 'Webhook', 'evolurise-webhook-delivery-recovery' ); ?></th>
+			<th><?php esc_html_e( 'Topic', 'evolurise-webhook-delivery-recovery' ); ?></th>
+			<th><?php esc_html_e( 'Delivery URL', 'evolurise-webhook-delivery-recovery' ); ?></th>
+			<th><?php esc_html_e( 'Status', 'evolurise-webhook-delivery-recovery' ); ?></th>
+			<th><?php esc_html_e( 'Consecutive failures', 'evolurise-webhook-delivery-recovery' ); ?></th>
+			<th><?php esc_html_e( 'Dead deliveries', 'evolurise-webhook-delivery-recovery' ); ?></th>
+			<th><?php esc_html_e( 'Auto re-enable', 'evolurise-webhook-delivery-recovery' ); ?></th>
 			<th></th>
 		</tr>
 	</thead>
 	<tbody>
 	<?php if ( ! $evowg_webhooks ) : ?>
-		<tr><td colspan="8"><?php esc_html_e( 'No webhooks defined. Create one under WooCommerce → Settings → Advanced → Webhooks.', 'evolurise-webhook-guard-for-woocommerce' ); ?></td></tr>
+		<tr><td colspan="8"><?php esc_html_e( 'No webhooks defined. Create one under WooCommerce → Settings → Advanced → Webhooks.', 'evolurise-webhook-delivery-recovery' ); ?></td></tr>
 	<?php endif; ?>
 	<?php
 	foreach ( $evowg_webhooks as $evowg_w ) :
@@ -40,16 +40,16 @@ $evowg_webhooks = EVOWG_Recovery::webhooks();
 		);
 		?>
 		<tr>
-			<td><a href="<?php echo esc_url( $evowg_link ); ?>"><?php echo esc_html( $evowg_w->get_name() ); ?></a><br><small>#<?php echo (int) $evowg_w->get_id(); ?> · <a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=advanced&section=webhooks&edit-webhook=' . $evowg_w->get_id() ) ); ?>"><?php esc_html_e( 'edit', 'evolurise-webhook-guard-for-woocommerce' ); ?></a></small></td>
+			<td><a href="<?php echo esc_url( $evowg_link ); ?>"><?php echo esc_html( $evowg_w->get_name() ); ?></a><br><small>#<?php echo (int) $evowg_w->get_id(); ?> · <a href="<?php echo esc_url( admin_url( 'admin.php?page=wc-settings&tab=advanced&section=webhooks&edit-webhook=' . $evowg_w->get_id() ) ); ?>"><?php esc_html_e( 'edit', 'evolurise-webhook-delivery-recovery' ); ?></a></small></td>
 			<td><code><?php echo esc_html( $evowg_w->get_topic() ); ?></code></td>
 			<td><small><?php echo esc_html( $evowg_w->get_delivery_url() ); ?></small></td>
 			<td>
 				<?php if ( 'active' === $evowg_w->get_status() ) : ?>
-					<span class="evowg-status evowg-status-success"><?php esc_html_e( 'Active', 'evolurise-webhook-guard-for-woocommerce' ); ?></span>
+					<span class="evowg-status evowg-status-success"><?php esc_html_e( 'Active', 'evolurise-webhook-delivery-recovery' ); ?></span>
 				<?php elseif ( 'disabled' === $evowg_w->get_status() ) : ?>
-					<span class="evowg-status evowg-status-dead"><?php esc_html_e( 'Disabled', 'evolurise-webhook-guard-for-woocommerce' ); ?></span>
+					<span class="evowg-status evowg-status-dead"><?php esc_html_e( 'Disabled', 'evolurise-webhook-delivery-recovery' ); ?></span>
 					<?php if ( $evowg_state['disabled_at'] ) : ?>
-						<br><small><?php echo esc_html( sprintf( /* translators: %s: human time diff */ __( 'since %s ago', 'evolurise-webhook-guard-for-woocommerce' ), human_time_diff( $evowg_state['disabled_at'] ) ) ); ?></small>
+						<br><small><?php echo esc_html( sprintf( /* translators: %s: human time diff */ __( 'since %s ago', 'evolurise-webhook-delivery-recovery' ), human_time_diff( $evowg_state['disabled_at'] ) ) ); ?></small>
 					<?php endif; ?>
 				<?php else : ?>
 					<span class="evowg-status evowg-status-replayed"><?php echo esc_html( $evowg_w->get_status() ); ?></span>
@@ -60,9 +60,9 @@ $evowg_webhooks = EVOWG_Recovery::webhooks();
 			<td>
 				<?php
 				if ( is_numeric( $evowg_next ) ) {
-					echo esc_html( sprintf( /* translators: %s: human time diff */ __( 'next attempt in %s', 'evolurise-webhook-guard-for-woocommerce' ), human_time_diff( time(), (int) $evowg_next ) ) );
+					echo esc_html( sprintf( /* translators: %s: human time diff */ __( 'next attempt in %s', 'evolurise-webhook-delivery-recovery' ), human_time_diff( time(), (int) $evowg_next ) ) );
 				} else {
-					echo esc_html( sprintf( /* translators: %d: attempts */ __( '%d attempts so far', 'evolurise-webhook-guard-for-woocommerce' ), (int) $evowg_state['reenable_attempts'] ) );
+					echo esc_html( sprintf( /* translators: %d: attempts */ __( '%d attempts so far', 'evolurise-webhook-delivery-recovery' ), (int) $evowg_state['reenable_attempts'] ) );
 				}
 				?>
 			</td>
@@ -72,9 +72,9 @@ $evowg_webhooks = EVOWG_Recovery::webhooks();
 					<input type="hidden" name="action" value="evowg_action">
 					<input type="hidden" name="webhook_id" value="<?php echo (int) $evowg_w->get_id(); ?>">
 					<?php if ( 'active' !== $evowg_w->get_status() ) : ?>
-						<button type="submit" name="do" value="reenable" class="button button-primary"><?php esc_html_e( 'Re-enable & replay dead', 'evolurise-webhook-guard-for-woocommerce' ); ?></button>
+						<button type="submit" name="do" value="reenable" class="button button-primary"><?php esc_html_e( 'Re-enable & replay dead', 'evolurise-webhook-delivery-recovery' ); ?></button>
 					<?php elseif ( $evowg_dead ) : ?>
-						<button type="submit" name="do" value="replay_dead" class="button"><?php esc_html_e( 'Replay dead deliveries', 'evolurise-webhook-guard-for-woocommerce' ); ?></button>
+						<button type="submit" name="do" value="replay_dead" class="button"><?php esc_html_e( 'Replay dead deliveries', 'evolurise-webhook-delivery-recovery' ); ?></button>
 					<?php endif; ?>
 				</form>
 			</td>

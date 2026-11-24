@@ -1,4 +1,4 @@
-# Evolurise Webhook Guard for WooCommerce
+# Evolurise Webhook Delivery Recovery for WooCommerce
 
 **Retries failed WooCommerce webhook deliveries, keeps a replayable log, alerts you when a webhook gets disabled and switches it back on.**
 
@@ -19,7 +19,7 @@ The WooCommerce log shows what happened; it does not fix it. This plugin does.
 
 ## What it does
 
-| | WooCommerce alone | with Webhook Guard |
+| | WooCommerce alone | with Webhook Delivery Recovery |
 |---|---|---|
 | Receiver times out | event lost | retried at +1, +3, +9, +27, +81 min (configurable) |
 | Receiver answers 503 / 429 | event lost | retried with backoff |
@@ -37,16 +37,16 @@ Requires WordPress 6.4+, PHP 7.4+, WooCommerce 8.0+.
 wp plugin install https://github.com/walidsadfi-evolurise/webhook-guard-for-woocommerce/archive/refs/heads/main.zip --activate
 ```
 
-or upload the folder to `wp-content/plugins/`. Then **WooCommerce → Webhook Guard → Settings**: check the retry schedule, add an alert email or a Slack URL. Existing webhooks are covered immediately.
+or upload the folder to `wp-content/plugins/`. Then **WooCommerce → Webhook Delivery Recovery → Settings**: check the retry schedule, add an alert email or a Slack URL. Existing webhooks are covered immediately.
 
 ## WP-CLI
 
 ```bash
-wp wc webhook-guard stats
-wp wc webhook-guard list --status=dead
-wp wc webhook-guard replay 42
-wp wc webhook-guard replay --webhook=7 --status=dead --background
-wp wc webhook-guard reenable 7
+wp wc webhook-recovery stats
+wp wc webhook-recovery list --status=dead
+wp wc webhook-recovery replay 42
+wp wc webhook-recovery replay --webhook=7 --status=dead --background
+wp wc webhook-recovery reenable 7
 ```
 
 ## How it works

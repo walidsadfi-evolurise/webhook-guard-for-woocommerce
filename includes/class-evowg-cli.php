@@ -12,11 +12,11 @@ defined( 'ABSPATH' ) || exit;
  *
  * ## EXAMPLES
  *
- *     wp wc webhook-guard list --status=dead
- *     wp wc webhook-guard replay 42
- *     wp wc webhook-guard replay --webhook=7 --status=dead
- *     wp wc webhook-guard reenable 7
- *     wp wc webhook-guard stats
+ *     wp wc webhook-recovery list --status=dead
+ *     wp wc webhook-recovery replay 42
+ *     wp wc webhook-recovery replay --webhook=7 --status=dead
+ *     wp wc webhook-recovery reenable 7
+ *     wp wc webhook-recovery stats
  */
 class EVOWG_CLI {
 

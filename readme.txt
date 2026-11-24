@@ -1,4 +1,4 @@
-=== Evolurise Webhook Guard for WooCommerce ===
+=== Evolurise Webhook Delivery Recovery for WooCommerce ===
 Contributors: evolurise
 Tags: woocommerce, webhooks, retry, integration, monitoring
 Requires at least: 6.4
@@ -18,19 +18,19 @@ WooCommerce webhooks are how your store talks to your ERP, CRM, warehouse, invoi
 * after more than five consecutive failures WooCommerce **disables the webhook** and never re-enables it;
 * nobody is told. Orders keep coming in, nothing reaches the other system, and you find out days later.
 
-Webhook Guard fixes the three problems without touching how you create webhooks:
+Webhook Delivery Recovery fixes the three problems without touching how you create webhooks:
 
 **Retries with exponential backoff.** Network errors, timeouts, 5xx and 429 answers are retried through Action Scheduler (1 min, 3 min, 9 min, 27 min, 81 min by default, all configurable). 4xx answers are not retried by default, because the receiver rejected the payload itself; you can turn that on.
 
 **A delivery log you can act on.** Every attempt is a row: webhook, topic, resource, attempt number, response code, error, duration. Filter by status (succeeded, retrying, dead, replayed), search, and **replay** any delivery with one click; the payload is rebuilt from the resource's current state. Bulk replay runs in the background, spaced out so a receiver that just came back is not flooded.
 
-**Disabled-webhook recovery.** When WooCommerce disables a webhook, Webhook Guard records it, alerts you, re-enables it after a growing delay (5 min, 10 min, 20 min… capped at 6 h), resets WooCommerce's failure counter and replays the deliveries recorded as dead while the webhook was down. If the receiver stays down after the configured number of attempts, you get a final alert and the webhook stays off.
+**Disabled-webhook recovery.** When WooCommerce disables a webhook, Webhook Delivery Recovery records it, alerts you, re-enables it after a growing delay (5 min, 10 min, 20 min… capped at 6 h), resets WooCommerce's failure counter and replays the deliveries recorded as dead while the webhook was down. If the receiver stays down after the configured number of attempts, you get a final alert and the webhook stays off.
 
 **Alerts** by email and by a generic JSON webhook (Slack, Discord, Mattermost, n8n, Make, Zapier), throttled per webhook so an outage does not send you 200 messages.
 
 **Site Health** tests: "all webhooks active" (critical when one is disabled) and "no delivery lost in the last 24 hours".
 
-**WP-CLI**: `wp wc webhook-guard list --status=dead`, `replay <id>`, `replay --webhook=7 --background`, `reenable 7`, `stats`.
+**WP-CLI**: `wp wc webhook-recovery list --status=dead`, `replay <id>`, `replay --webhook=7 --background`, `reenable 7`, `stats`.
 
 = Privacy =
 
@@ -48,14 +48,14 @@ Compatible with High-Performance Order Storage. Needs WooCommerce 8.0 or newer (
 == Installation ==
 
 1. Install and activate like any plugin. WooCommerce must be active.
-2. Go to **WooCommerce → Webhook Guard → Settings**, check the retry schedule and add an alert email or Slack URL.
+2. Go to **WooCommerce → Webhook Delivery Recovery → Settings**, check the retry schedule and add an alert email or Slack URL.
 3. That's it. Existing webhooks are covered immediately; nothing changes in WooCommerce → Settings → Advanced → Webhooks.
 
 == Frequently Asked Questions ==
 
 = Does it change what WooCommerce sends? =
 
-No. The payload, headers and signature are built by WooCommerce exactly as before. Webhook Guard only decides to deliver again, later.
+No. The payload, headers and signature are built by WooCommerce exactly as before. Webhook Delivery Recovery only decides to deliver again, later.
 
 = What is a "dead" delivery? =
 

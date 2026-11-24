@@ -24,7 +24,7 @@ foreach ( (array) $evowg_transients as $evowg_name ) {
 wp_clear_scheduled_hook( 'evowg_purge_log' );
 
 if ( function_exists( 'as_unschedule_all_actions' ) ) {
-	as_unschedule_all_actions( 'evowg_retry_delivery', array(), 'wc-webhook-guard' );
-	as_unschedule_all_actions( 'evowg_replay_delivery', array(), 'wc-webhook-guard' );
-	as_unschedule_all_actions( 'evowg_reenable_webhook', array(), 'wc-webhook-guard' );
+	as_unschedule_all_actions( 'evowg_retry_delivery', array(), 'evowg' );
+	as_unschedule_all_actions( 'evowg_replay_delivery', array(), 'evowg' );
+	as_unschedule_all_actions( 'evowg_reenable_webhook', array(), 'evowg' );
 }

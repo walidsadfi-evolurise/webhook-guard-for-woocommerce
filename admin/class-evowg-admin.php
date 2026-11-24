@@ -10,7 +10,7 @@ defined( 'ABSPATH' ) || exit;
 require_once EVOWG_DIR . 'admin/class-evowg-list-table.php';
 
 /**
- * WooCommerce → Webhook Guard.
+ * WooCommerce → Webhook Delivery Recovery.
  */
 class EVOWG_Admin {
 
@@ -47,8 +47,8 @@ class EVOWG_Admin {
 	public static function menu() {
 		add_submenu_page(
 			'woocommerce',
-			__( 'Webhook Guard', 'evolurise-webhook-guard-for-woocommerce' ),
-			__( 'Webhook Guard', 'evolurise-webhook-guard-for-woocommerce' ),
+			__( 'Webhook Delivery Recovery', 'evolurise-webhook-delivery-recovery' ),
+			__( 'Webhook Delivery Recovery', 'evolurise-webhook-delivery-recovery' ),
 			'manage_woocommerce',
 			self::PAGE,
 			array( __CLASS__, 'render' )
@@ -62,7 +62,7 @@ class EVOWG_Admin {
 	 * @return array
 	 */
 	public static function plugin_links( $links ) {
-		array_unshift( $links, '<a href="' . esc_url( admin_url( 'admin.php?page=evowg&tab=settings' ) ) . '">' . esc_html__( 'Settings', 'evolurise-webhook-guard-for-woocommerce' ) . '</a>' );
+		array_unshift( $links, '<a href="' . esc_url( admin_url( 'admin.php?page=evowg&tab=settings' ) ) . '">' . esc_html__( 'Settings', 'evolurise-webhook-delivery-recovery' ) . '</a>' );
 		return $links;
 	}
 
@@ -82,11 +82,24 @@ class EVOWG_Admin {
 	}
 
 	/**
-	 * Global notice on WooCommerce screens when a webhook is disabled.
+	 * Notice when a webhook is disabled, limited to the plugin page and the
+	 * WooCommerce webhooks settings screen, where the user can act on it.
 	 */
 	public static function disabled_notice() {
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
 		$screen = get_current_screen();
-		if ( ! $screen || false === strpos( (string) $screen->id, 'woocommerce' ) || ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! $screen ) {
+			return;
+		}
+		$on_plugin_page = ( 'woocommerce_page_' . self::PAGE === $screen->id );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only screen detection.
+		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only screen detection.
+		$section = isset( $_GET['section'] ) ? sanitize_key( wp_unslash( $_GET['section'] ) ) : '';
+		$on_webhooks_screen = ( 'woocommerce_page_wc-settings' === $screen->id && 'advanced' === $tab && 'webhooks' === $section );
+		if ( ! $on_plugin_page && ! $on_webhooks_screen ) {
 			return;
 		}
 		$disabled = EVOWG_Recovery::webhooks( 'disabled' );
@@ -99,16 +112,16 @@ class EVOWG_Admin {
 		}
 		printf(
 			'<div class="notice notice-error"><p><strong>%s</strong> %s <a href="%s">%s</a></p></div>',
-			esc_html__( 'Webhook Guard:', 'evolurise-webhook-guard-for-woocommerce' ),
+			esc_html__( 'Webhook Delivery Recovery:', 'evolurise-webhook-delivery-recovery' ),
 			esc_html(
 				sprintf(
 					/* translators: %s: webhook names */
-					_n( 'the webhook %s is disabled, its events are not being delivered.', 'these webhooks are disabled, their events are not being delivered: %s.', count( $names ), 'evolurise-webhook-guard-for-woocommerce' ),
+					_n( 'the webhook %s is disabled, its events are not being delivered.', 'these webhooks are disabled, their events are not being delivered: %s.', count( $names ), 'evolurise-webhook-delivery-recovery' ),
 					implode( ', ', $names )
 				)
 			),
 			esc_url( admin_url( 'admin.php?page=evowg' ) ),
-			esc_html__( 'Re-enable and replay', 'evolurise-webhook-guard-for-woocommerce' )
+			esc_html__( 'Re-enable and replay', 'evolurise-webhook-delivery-recovery' )
 		);
 	}
 
@@ -117,7 +130,7 @@ class EVOWG_Admin {
 	 */
 	public static function handle_action() {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			wp_die( esc_html__( 'You are not allowed to do this.', 'evolurise-webhook-guard-for-woocommerce' ) );
+			wp_die( esc_html__( 'You are not allowed to do this.', 'evolurise-webhook-delivery-recovery' ) );
 		}
 		check_admin_referer( 'evowg_action' );
 
@@ -129,21 +142,21 @@ class EVOWG_Admin {
 			case 'replay':
 				$id  = isset( $_POST['row_id'] ) ? (int) $_POST['row_id'] : 0;
 				$r   = EVOWG_Retry::replay( $id );
-				$msg = is_wp_error( $r ) ? $r->get_error_message() : __( 'Delivery replayed. Check the newest row for the result.', 'evolurise-webhook-guard-for-woocommerce' );
+				$msg = is_wp_error( $r ) ? $r->get_error_message() : __( 'Delivery replayed. Check the newest row for the result.', 'evolurise-webhook-delivery-recovery' );
 				break;
 
 			case 'bulk_replay':
 				$ids = isset( $_POST['row_ids'] ) ? array_map( 'intval', (array) wp_unslash( $_POST['row_ids'] ) ) : array();
 				$n   = EVOWG_Retry::queue_replays( $ids, 2 );
 				/* translators: %d: count */
-				$msg = sprintf( __( '%d replays queued in the background.', 'evolurise-webhook-guard-for-woocommerce' ), $n );
+				$msg = sprintf( __( '%d replays queued in the background.', 'evolurise-webhook-delivery-recovery' ), $n );
 				break;
 
 			case 'reenable':
 				$wid = isset( $_POST['webhook_id'] ) ? (int) $_POST['webhook_id'] : 0;
 				$r   = EVOWG_Recovery::reenable( $wid, true );
 				/* translators: %d: count */
-				$msg = is_wp_error( $r ) ? $r->get_error_message() : sprintf( __( 'Webhook re-enabled; %d dead deliveries queued for replay.', 'evolurise-webhook-guard-for-woocommerce' ), (int) $r );
+				$msg = is_wp_error( $r ) ? $r->get_error_message() : sprintf( __( 'Webhook re-enabled; %d dead deliveries queued for replay.', 'evolurise-webhook-delivery-recovery' ), (int) $r );
 				break;
 
 			case 'replay_dead':
@@ -151,13 +164,13 @@ class EVOWG_Admin {
 				$dead = EVOWG_Store::dead_for_webhook( $wid, 500 );
 				$n    = EVOWG_Retry::queue_replays( wp_list_pluck( $dead, 'id' ), 2 );
 				/* translators: %d: count */
-				$msg = sprintf( __( '%d dead deliveries queued for replay.', 'evolurise-webhook-guard-for-woocommerce' ), $n );
+				$msg = sprintf( __( '%d dead deliveries queued for replay.', 'evolurise-webhook-delivery-recovery' ), $n );
 				break;
 
 			case 'purge':
 				$n = EVOWG_Store::purge( (int) EVOWG_Settings::get( 'retention_days' ) );
 				/* translators: %d: count */
-				$msg = sprintf( __( '%d old rows deleted.', 'evolurise-webhook-guard-for-woocommerce' ), $n );
+				$msg = sprintf( __( '%d old rows deleted.', 'evolurise-webhook-delivery-recovery' ), $n );
 				break;
 		}
 
@@ -174,7 +187,7 @@ class EVOWG_Admin {
 	 */
 	public static function render() {
 		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'deliveries'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		echo '<div class="wrap evowg-wrap"><h1>' . esc_html__( 'Webhook Guard', 'evolurise-webhook-guard-for-woocommerce' ) . '</h1>';
+		echo '<div class="wrap evowg-wrap"><h1>' . esc_html__( 'Webhook Delivery Recovery', 'evolurise-webhook-delivery-recovery' ) . '</h1>';
 
 		$msg = get_transient( 'evowg_msg_' . get_current_user_id() );
 		if ( false !== $msg ) {
@@ -183,9 +196,9 @@ class EVOWG_Admin {
 		}
 
 		$tabs = array(
-			'deliveries' => __( 'Deliveries', 'evolurise-webhook-guard-for-woocommerce' ),
-			'webhooks'   => __( 'Webhooks', 'evolurise-webhook-guard-for-woocommerce' ),
-			'settings'   => __( 'Settings', 'evolurise-webhook-guard-for-woocommerce' ),
+			'deliveries' => __( 'Deliveries', 'evolurise-webhook-delivery-recovery' ),
+			'webhooks'   => __( 'Webhooks', 'evolurise-webhook-delivery-recovery' ),
+			'settings'   => __( 'Settings', 'evolurise-webhook-delivery-recovery' ),
 		);
 		echo '<nav class="nav-tab-wrapper">';
 		foreach ( $tabs as $k => $label ) {

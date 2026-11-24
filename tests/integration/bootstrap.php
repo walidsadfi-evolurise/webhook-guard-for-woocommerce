@@ -34,7 +34,7 @@ tests_add_filter(
 			$wc = WP_PLUGIN_DIR . '/woocommerce/woocommerce.php';
 		}
 		require_once $wc;
-		require_once dirname( __DIR__, 2 ) . '/evolurise-webhook-guard-for-woocommerce.php';
+		require_once dirname( __DIR__, 2 ) . '/evolurise-webhook-delivery-recovery.php';
 	}
 );
 
