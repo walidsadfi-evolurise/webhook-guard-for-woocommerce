@@ -94,10 +94,13 @@ class EVOWG_Admin {
 			return;
 		}
 		$on_plugin_page = ( 'woocommerce_page_' . self::PAGE === $screen->id );
+
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only screen detection.
 		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
+
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only screen detection.
 		$section = isset( $_GET['section'] ) ? sanitize_key( wp_unslash( $_GET['section'] ) ) : '';
+
 		$on_webhooks_screen = ( 'woocommerce_page_wc-settings' === $screen->id && 'advanced' === $tab && 'webhooks' === $section );
 		if ( ! $on_plugin_page && ! $on_webhooks_screen ) {
 			return;
